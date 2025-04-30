@@ -924,7 +924,7 @@ class MainViewModel(
                         if (result.status == 10) {
                             ////////
 //                            val regReq2 =
-//                                RequestDataDTO("0123456789qsrt1", "secur123456789", 5, 1, "reg")
+//                                RequestDataDTO("0123456789qsrt1", "", 5, 1, "reg")
 //                            insertRegServerInDBUseCase.execute(
 //                                RegServerEntity(
 //                                    dvid = regReq2.dvid,
@@ -974,7 +974,7 @@ class MainViewModel(
 //    private fun regSendDataWIFI() {
 //        viewModelScope.launch {
 //            try {
-////                val regReq2 = RequestDataDTO("0123456789qsrt1", "secur123456789", 5, 4, "reg")
+////                val regReq2 = RequestDataDTO("0123456789qsrt1", "", 5, 4, "reg")
 //                val regSendDataWIFI = regSendDataWIFIUseCase.execute(regReq2)
 //                regSendDataWIFI.onSuccess { result ->
 //

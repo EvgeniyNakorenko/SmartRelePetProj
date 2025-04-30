@@ -736,7 +736,7 @@ fun Dialog(
                                     ScreenEvent.SendServerSettingsMode3(
                                         SendServerSettingsMode3DTO(
 //                                            dvid = "0123456789qsrt1",
-//                                            tkn = "secur123456789",
+//                                            tkn = "",
 //                                            typedv = 5,
 //                                            num = 4,
 //                                            com = "wv",
@@ -762,7 +762,7 @@ fun Dialog(
                                     ScreenEvent.SendServerSettingsMode4(
                                         SendServerSettingsMode4DTO(
 //                                            dvid = "0123456789qsrt1",
-//                                            tkn = "secur123456789",
+//                                            tkn = "",
 //                                            typedv = 5,
 //                                            num = 4,
 //                                            com = "wv",
@@ -789,7 +789,7 @@ fun Dialog(
                                     ScreenEvent.SendServerSettingsMode5(
                                         SendServerSettingsMode5DTO(
 //                                            dvid = "0123456789qsrt1",
-//                                            tkn = "secur123456789",
+//                                            tkn = "",
 //                                            typedv = 5,
 //                                            num = 4,
 //                                            com = "wv",
@@ -833,7 +833,7 @@ fun Dialog(
 
                 val sendSettingsDTO = SendSettingsDTO(
 //                    dvid = "0123456789qsrt1",
-//                    tkn = "secur123456789",
+//                    tkn = "",
 //                    typedv = 5,
 //                    num = 1,
                     dvid = deviceData.dvid,

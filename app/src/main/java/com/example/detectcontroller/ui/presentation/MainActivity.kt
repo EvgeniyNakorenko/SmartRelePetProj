@@ -124,7 +124,7 @@ class MainActivity : ComponentActivity() {
             this.getSharedPreferences(MainViewModel.REL_SETTINGS, Context.MODE_PRIVATE)
 
 //        val requestDataDTO = RequestDataDTO(
-//            "0123456789qsrt1", "secur123456789", 5, 4, "rv"
+//            "0123456789qsrt1", "", 5, 4, "rv"
 //        )
 //        viewModel.createEvent(ScreenEvent.GetServerSettings(requestDataDTO))
 
@@ -166,7 +166,7 @@ class MainActivity : ComponentActivity() {
 
                 // Выполнение в фоновом потоке
 //                val requestDataDTO = RequestDataDTO(
-//                    "0123456789qsrt1", "secur123456789", 5, 4, "rv"
+//                    "0123456789qsrt1", "", 5, 4, "rv"
 //                )
                 withContext(Dispatchers.IO) {
 

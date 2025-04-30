@@ -63,7 +63,7 @@ class ForegroundService() : Service() {
 
 //    val requestDataDTO = RequestDataDTO(
 //        "0123456789qsrt1",
-//        "secur123456789",
+//        "",
 //        5,
 //        4,
 //        "rs"
@@ -85,7 +85,7 @@ class ForegroundService() : Service() {
         checkServerEventUseCase = CheckServerEventUseCase()
         deleteEventServerUseCase = DeleteEventServerUseCase()
         deviceData = getGegData("rs")
-//        deviceData = RequestDataDTO("0123456789qsrt1", "secur123456789", 5, 4, "rs")
+//        deviceData = RequestDataDTO("0123456789qsrt1", "", 5, 4, "rs")
     }
 
     private fun getGegData(com: String): RequestDataDTO {
@@ -259,7 +259,7 @@ class ForegroundService() : Service() {
     private fun startDataLoading(deviceData: RequestDataDTO) {
 //        val requestDataDTO = RequestDataDTO(
 //            "0123456789qsrt1",
-//            "secur123456789",
+//            "",
 //            5,
 //            4,
 //            "rs"
