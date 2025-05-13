@@ -41,7 +41,6 @@ class ForegroundService() : Service() {
 
     private lateinit var notificationManager: NotificationManager
 
-    // onStartCommand can be called multiple times, so we keep track of "started" state manually
     private var isStarted = false
     private val scope = CoroutineScope(Dispatchers.Default)
     private val fetchDataUseCase = FetchDataUseCase()
@@ -61,20 +60,11 @@ class ForegroundService() : Service() {
     private var goModeOff: Boolean = false
 
 
-//    val requestDataDTO = RequestDataDTO(
-//        "0123456789qsrt1",
-//        "",
-//        5,
-//        4,
-//        "rs"
-//    )
-
     override fun onCreate() {
         super.onCreate()
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         preferences = application.getSharedPreferences(REL_SETTINGS, Context.MODE_PRIVATE)
         goModeOff = preferences.getBoolean(RELE_MODE_GO, false) ?: false
-
         database = AppDatabase.getDatabase(this)
         saveDataInDBUseCase = SaveDataInDBUseCase(database)
         saveEventUseCase = SaveEventServerInDBUseCase(database)
@@ -85,7 +75,6 @@ class ForegroundService() : Service() {
         checkServerEventUseCase = CheckServerEventUseCase()
         deleteEventServerUseCase = DeleteEventServerUseCase()
         deviceData = getGegData("rs")
-//        deviceData = RequestDataDTO("0123456789qsrt1", "", 5, 4, "rs")
     }
 
     private fun getGegData(com: String): RequestDataDTO {
@@ -119,7 +108,7 @@ class ForegroundService() : Service() {
         if (!isStarted) {
             makeForeground()
             startEventServerLoading()
-            startDataLoading(deviceData)
+            startDataLoading()
             isStarted = true
         }
         return START_STICKY
@@ -154,27 +143,33 @@ class ForegroundService() : Service() {
 
     private fun startEventServerLoading() {
         scope.launch {
+            var regData:RegServerEntity? = null
+
             while (isActive) {
                 try {
                     val requestEv: RequestDataDTO
-                    val reqDVID = preferences.getString(REG_DVID, "") ?: ""
-                    val reqTKN = preferences.getString(REG_TKN, "") ?: ""
-                    val reqTYPEVDString = preferences.getString(REG_TYPEDV, "")
-                    val reqTYPEVD = if (!reqTYPEVDString.isNullOrEmpty()) {
-                        reqTYPEVDString.toInt()
-                    } else 0
 
-                    val reqNUMString = preferences.getString(REG_NUM, "")
-                    val reqNUM = if (!reqNUMString.isNullOrEmpty()) {
-                        reqNUMString.toInt()
-                    } else 0
+                    if (regData == null) {
+                        try {
+                            regData = getAllRegServerFromDBUseCase.execute().lastOrNull()
+                        } catch (e: Exception) {
+                            Log.e(TAG, "download reg data error", e)
+                        }
+                    }
 
-                    val reqCOM = "rev"
-//                    requestEv = RequestDataDTO(reqDVID, reqTKN, reqTYPEVD, reqNUM, reqCOM)
-                    requestEv = deviceData.also { it.com = "rev"}
+                        if (!regData.isNotNull()) println("no regData")
+                        val loadReq = regData?.let {
+                            RequestDataDTO(
+                                dvid = regData.dvid,
+                                tkn = regData.tkn,
+                                typedv = regData.typedv,
+                                num = regData.num,
+                                com = "rev"
+                            )
+                        }
 
-                    val event = checkServerEventUseCase.execute(requestEv)
-                    delay(100)
+                    val event = loadReq?.let { checkServerEventUseCase.execute(it) }
+                    delay(10)
 
                     var lastEvent: StatusEventServerDTO? =
                         getOneLastEventServerFromDBUseCase.execute(
@@ -184,22 +179,24 @@ class ForegroundService() : Service() {
                             )
                         )
 
-                    event.onSuccess { res ->
+                    event?.onSuccess { res ->
                         if (lastEvent != res) {
                             if (res.name == "gomode") {
                                 deleteEventServerUseCase.execute(
                                     deleteEventDTO = DeleteEventDTO(
-                                        dvid = deviceData.dvid,
-                                        tkn = deviceData.tkn,
-                                        typedv = deviceData.typedv,
-                                        num = deviceData.num,
+                                        dvid = loadReq.dvid,
+                                        tkn = loadReq.tkn,
+                                        typedv = loadReq.typedv,
+                                        num = loadReq.num,
                                         com = "del",
                                         id = res.id
                                     )
                                 ).onSuccess {
-                                    if (goModeOff) {
+                                    if (!goModeOff) {
                                         preferences.edit().putBoolean(RELE_MODE_GO, true).apply()
+                                        goModeOff = true
                                     } else {
+                                        goModeOff = false
                                         preferences.edit().putBoolean(RELE_MODE_GO, false).apply()
                                     }
                                 }
@@ -214,7 +211,7 @@ class ForegroundService() : Service() {
                                         name = res.name
                                     )
                                 )
-                                delay(100)
+                                delay(10)
                                 showNotification("Внимание, новое событие", res.toString())
                                 preferences
                                     .edit()
@@ -227,7 +224,7 @@ class ForegroundService() : Service() {
                             }
 
                         }
-                    }.onFailure { error ->
+                    }?.onFailure { error ->
                         error.printStackTrace()
                     }
                     delay(5000)
@@ -256,56 +253,35 @@ class ForegroundService() : Service() {
         )
     }
 
-    private fun startDataLoading(deviceData: RequestDataDTO) {
-//        val requestDataDTO = RequestDataDTO(
-//            "0123456789qsrt1",
-//            "",
-//            5,
-//            4,
-//            "rs"
-//        )
-        val requestDataDTO = deviceData
+    private fun startDataLoading() {
 
         scope.launch {
             ////////////////////////////////////////////
-//            repeat(9) {
-//                saveDataInDBUseCase.execute(
-//                    UiState(
-//                        "timedv: ${Random.nextInt(1, 31)}-06-2024 14:13:12",
-//                        "----0",
-//                        "----${Random.nextInt(200, 230)}",
-//                        "----${Random.nextInt(2, 6)}",
-//                        "----${Random.nextInt(800, 1200)}",
-//                        "----${Random.nextInt(48, 52)}",
-//                        "----${Random.nextInt(20, 31)}"
-//                    )
-//                )
-//            }
-            delay(100)
+
             var regData: RegServerEntity?
             regData = null
-            try {
-                regData = getAllRegServerFromDBUseCase.execute().lastOrNull()
-            } catch (e: Exception) {
-                Log.e(TAG, "download reg data error", e)
-            }
-
             ////////////////////////////////////////////
             while (isActive) {
+                delay(10)
+
+                if (regData == null) {
+                    try {
+                        regData = getAllRegServerFromDBUseCase.execute().lastOrNull()
+                    } catch (e: Exception) {
+                        Log.e(TAG, "download reg data error", e)
+                    }
+                }
                 try {
                     if (!regData.isNotNull()) println("no regData")
-//                    val loadReq = regData?.let {
-//                        RequestDataDTO(
-//                            dvid = it.dvid,
-//                            tkn = regData.tkn,
-//                            typedv = regData.typedv,
-//                            num = regData.num,
-//                            com = regData.com
-//                        )
-//                    }
-                    val loadReq = deviceData.also { it.com = "rs" }
-
-//                    val fact = fetchDataUseCase.execute(requestDataDTO)
+                    val loadReq = regData?.let {
+                        RequestDataDTO(
+                            dvid = it.dvid,
+                            tkn = regData.tkn,
+                            typedv = regData.typedv,
+                            num = regData.num,
+                            com = regData.com
+                        )
+                    }
                     val fact = loadReq?.let { fetchDataUseCase.execute(it) }
                     fact?.onSuccess { res ->
                         saveDataInDBUseCase.execute(res)

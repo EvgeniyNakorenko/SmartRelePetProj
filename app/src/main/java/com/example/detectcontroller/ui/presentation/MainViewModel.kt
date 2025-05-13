@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateListOf
@@ -45,7 +44,6 @@ import com.example.detectcontroller.domain.server.SendServerSettingsMode3UseCase
 import com.example.detectcontroller.domain.server.SendServerSettingsMode4UseCase
 import com.example.detectcontroller.domain.server.SendServerSettingsMode5UseCase
 import com.example.detectcontroller.domain.server.SendSettingsServerUseCase
-import com.example.detectcontroller.service.ForegroundService
 import com.example.detectcontroller.ui.presentation.DialogState.INVISIBLE
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -221,13 +219,22 @@ class MainViewModel(
     private val _eventServerList = MutableStateFlow<List<StatusEventServerDTO>>(emptyList())
     val eventServerList: StateFlow<List<StatusEventServerDTO>> = _eventServerList
 
-    private val _saveRegDataWIFI = mutableStateListOf<RequestDataDTO>(RequestDataDTO())
+
+    private val _saveRegDataWIFI = mutableStateListOf<RequestDataDTO>(
+        RequestDataDTO(
+            dvid = preferences.getString(REG_DVID,"0").toString(),
+            tkn =preferences.getString(REG_TKN,"0").toString(),
+            typedv = preferences.getString(REG_TYPEDV,"0")?.toInt() ?: 0,
+            num =preferences.getString(REG_NUM,"0")?.toInt() ?: 0,
+            com =preferences.getString(REG_COM,"").toString()
+        )
+    )
     val regDataWIFI: SnapshotStateList<RequestDataDTO> = _saveRegDataWIFI
     fun setRegDataWIFI(item: RegResponseDTO) {
         ////////////FIXIT
-//        val id = "0123456789qsrt4"
-        val itemToSave = RequestDataDTO(item.devid, item.token, item.typedv, 1, "reg")
+        val itemToSave = RequestDataDTO(item.devid, item.token, item.typedv, item.num, "reg")
         _saveRegDataWIFI.add(itemToSave)
+        showToast("Устройство зарегистрировано")
     }
 
     //    SETREL
@@ -273,7 +280,7 @@ class MainViewModel(
     //rele mode 4
     private val _releMode4Time = mutableStateListOf<Pair<String, String>>(getTimeOrDefaultMode4())
     val releMode4Time: SnapshotStateList<Pair<String, String>> = _releMode4Time
-    fun getTimeOrDefaultMode4(): Pair<String, String> {
+    private fun getTimeOrDefaultMode4(): Pair<String, String> {
         val timeStringOn = preferences.getString(RELE_MODE4_TIME_ON, "00:00:00") ?: "00:00:00"
         val timeStringOff = preferences.getString(RELE_MODE4_TIME_OFF, "00:00:00") ?: "00:00:00"
         return Pair(timeStringOn, timeStringOff)
@@ -299,10 +306,6 @@ class MainViewModel(
 
     //rele mode go
 
-//    private val _uiState = MutableStateFlow(UiState())
-//    val uiState: StateFlow<UiState> = _uiState
-
-
     private val _releModeGO =
         MutableStateFlow<Boolean>(
             preferences.getBoolean(RELE_MODE_GO, false) ?: false
@@ -315,6 +318,7 @@ class MainViewModel(
     private val _buttonGoVisib = MutableStateFlow(true)
     val buttonGoVisib: StateFlow<Boolean> = _buttonGoVisib
     fun set_buttonGoVisib(value: Boolean) {
+        Thread.sleep(100)
         _buttonGoVisib.value = value
     }
 
@@ -397,11 +401,6 @@ class MainViewModel(
         _textFieldValue1P.add(text)
     }
 
-//    private val _textFieldValue2P = mutableStateListOf(preferences.getInt(P_TEXT_FIELD_VALUE2, 100))
-//    val textFieldValue2P: SnapshotStateList<Int> = _textFieldValue2P
-//    fun setTextFieldValue2P(text: Int) {
-//        _textFieldValue2P.add(text)
-//    }
 
     private val _checkboxValue1P =
         mutableStateListOf(preferences.getBoolean(P_CHECKBOX_VALUE1, false))
@@ -430,12 +429,6 @@ class MainViewModel(
     fun setTextFieldValue1T(text: Int) {
         _textFieldValue1T.add(text)
     }
-
-//    private val _textFieldValue2T = mutableStateListOf(preferences.getInt(T_TEXT_FIELD_VALUE2, 0))
-//    val textFieldValue2T: SnapshotStateList<Int> = _textFieldValue2T
-//    fun setTextFieldValue2T(text: Int) {
-//        _textFieldValue2T.add(text)
-//    }
 
     private val _checkboxValue1T =
         mutableStateListOf(preferences.getBoolean(T_CHECKBOX_VALUE1, false))
@@ -502,7 +495,14 @@ class MainViewModel(
         _checkboxValue2COU.add(text)
     }
 
-    val listDevices = mutableStateListOf<RequestDataDTO>()
+    private val _listDevices = mutableStateListOf(RequestDataDTO(
+        preferences.getString(REG_DVID, "") ?: "",
+        preferences.getString(REG_TKN, "") ?: "",
+        preferences.getString(REG_TYPEDV, "")?.toIntOrNull()?: 0,
+        preferences.getString(REG_NUM, "")?.toIntOrNull()?: 0,
+        "rs"
+    ))
+    val listDevices : SnapshotStateList<RequestDataDTO> = _listDevices
 
 
     init {
@@ -512,21 +512,20 @@ class MainViewModel(
         } else set_releModeGO(true)
 //        createEvent(ScreenEvent.LoadLastEventServerFromDB(""))
 
-
         val requestEv: RequestDataDTO
-        val reqDVID = preferences.getString(ForegroundService.REG_DVID, "") ?: ""
-        val reqTKN = preferences.getString(ForegroundService.REG_TKN, "") ?: ""
-        val reqTYPEVDString = preferences.getString(ForegroundService.REG_TYPEDV, "")
+        val reqDVID = preferences.getString(REG_DVID, "") ?: ""
+        val reqTKN = preferences.getString(REG_TKN, "") ?: ""
+        val reqTYPEVDString = preferences.getString(REG_TYPEDV, "")
         val reqTYPEVD = if (!reqTYPEVDString.isNullOrEmpty()) {
             reqTYPEVDString.toInt()
         } else 0
-        val reqNUMString = preferences.getString(ForegroundService.REG_NUM, "")
+        val reqNUMString = preferences.getString(REG_NUM, "")
         val reqNUM = if (!reqNUMString.isNullOrEmpty()) {
             reqNUMString.toInt()
         } else 0
 
         requestEv = RequestDataDTO(reqDVID, reqTKN, reqTYPEVD, reqNUM, "rs")
-        listDevices.add(requestEv)
+        _listDevices.add(requestEv)
 
     }
 
@@ -558,15 +557,23 @@ class MainViewModel(
             is ScreenEvent.OpenSettingsCOU -> updateSettingsCOU()
             is ScreenEvent.OpenSettingsRel -> openSettingsRel()
             is ScreenEvent.RegSMS -> {
-                insertRegServerInDBUseCase.execute(
-                    RegServerEntity(
-                        dvid = regDataWIFI.last().dvid,
-                        tkn = regDataWIFI.last().tkn,
-                        typedv = regDataWIFI.last().typedv,
-                        com = "rs",
-                        num = 4
-                    )
+                val regServerEntity = RegServerEntity(
+                    dvid = regDataWIFI.last().dvid,
+                    tkn = regDataWIFI.last().tkn,
+                    typedv = regDataWIFI.last().typedv,
+                    com = "rs",
+                    num = regDataWIFI.last().num
                 )
+                val requestDataDTO = RequestDataDTO(
+                    dvid = regDataWIFI.last().dvid,
+                    tkn = regDataWIFI.last().tkn,
+                    typedv = regDataWIFI.last().typedv,
+                    com = "rs",
+                    num = regDataWIFI.last().num
+                )
+                insertRegServerInDBUseCase.execute(regServerEntity)
+                saveRegDataPrefs(requestDataDTO)
+                _listDevices.add(requestDataDTO)
             }
 
             is ScreenEvent.RegWIFI -> {
@@ -587,7 +594,7 @@ class MainViewModel(
 
             is ScreenEvent.GetServerSettings -> getSettingsServer(event.value)
             is ScreenEvent.SendServerSettingsMode012 -> {
-                TODO()
+                sendServerSettingsMode012(event.value)
             }
 
             is ScreenEvent.SendServerGoMode -> {
@@ -609,25 +616,14 @@ class MainViewModel(
         )
         sendServerGoMode.onSuccess { result ->
             if (result.status == 0) {
-                when (releState) {
-                    true -> {
-                        set_releModeGO(false)
-//                        preferences.getString(RELE_MODE_GO, "0")
-                        preferences.edit().putBoolean(RELE_MODE_GO, false).apply()
-                    }
-
-                    false -> {
-                        set_releModeGO(true)
-                        preferences.edit().putBoolean(RELE_MODE_GO, true).apply()
-                    }
-                }
-                set_buttonGoVisib(true)
+                println("gomode отправлен на сервер")
             } else {
-                set_buttonGoVisib(true)
+                println("gomode не отправлен на сервер")
             }
         }.onFailure { e ->
             e.printStackTrace()
-            set_buttonGoVisib(true)
+            showToast("gomode не отправлен на сервер")
+//            set_buttonGoVisib(true)
         }
 
     }
@@ -725,18 +721,15 @@ class MainViewModel(
 
                         is GetSettingsDTOrmode6 -> {
                             set_releModeValue(result.rmode)
-
                         }
                     }
-
-
                 }.onFailure {
                     it.printStackTrace()
-                    showToast("Произошла ошибка")
+//                    showToast("Произошла ошибка")
                 }
             } catch (e: Exception) {
-                Log.e(ForegroundService.TAG, "download error", e)
-                showToast("Произошла неизвестная ошибка")
+                e.printStackTrace()
+//                showToast("Произошла неизвестная ошибка")
             }
         }
     }
@@ -748,7 +741,24 @@ class MainViewModel(
     }
 
     private fun sendServerSettingsMode012(sendServerSettingsMode012DTO: SendServerSettingsMode012DTO) {
-//        sendServerSettingsMode012UseCase
+
+
+        viewModelScope.launch {
+            try {
+                val sendSettings =
+                    sendServerSettingsMode012UseCase.execute(sendServerSettingsMode012DTO)
+                sendSettings.onSuccess { result ->
+                    showToast(
+                        if (result.status == 0) "Изменения сохранены на сервере \n (012 режим)" else "Не сохранены"
+                    )
+                }.onFailure {
+                    it.printStackTrace()
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+
 
     }
 
@@ -763,11 +773,11 @@ class MainViewModel(
                     )
                 }.onFailure {
                     it.printStackTrace()
-                    showToast("Произошла ошибка")
+//                    showToast("Произошла ошибка")
                 }
             } catch (e: Exception) {
-                Log.e(ForegroundService.TAG, "download error", e)
-                showToast("Произошла неизвестная ошибка")
+                e.printStackTrace()
+//                showToast("Произошла неизвестная ошибка")
             }
         }
     }
@@ -783,11 +793,11 @@ class MainViewModel(
                     )
                 }.onFailure {
                     it.printStackTrace()
-                    showToast("Произошла ошибка")
+//                    showToast("Произошла ошибка")
                 }
             } catch (e: Exception) {
-                Log.e(ForegroundService.TAG, "download error", e)
-                showToast("Произошла неизвестная ошибка")
+                e.printStackTrace()
+//                showToast("Произошла неизвестная ошибка")
             }
         }
     }
@@ -804,11 +814,11 @@ class MainViewModel(
                     )
                 }.onFailure {
                     it.printStackTrace()
-                    showToast("Произошла ошибка")
+//                    showToast("Произошла ошибка")
                 }
             } catch (e: Exception) {
-                Log.e(ForegroundService.TAG, "download error", e)
-                showToast("Произошла неизвестная ошибка")
+                e.printStackTrace()
+//                showToast("Произошла неизвестная ошибка")
             }
         }
     }
@@ -823,25 +833,15 @@ class MainViewModel(
                     )
                 }.onFailure {
                     it.printStackTrace()
-                    showToast("Произошла ошибка")
+//                    showToast("Произошла ошибка")
                 }
             } catch (e: Exception) {
-                Log.e(ForegroundService.TAG, "download error", e)
-                showToast("Произошла неизвестная ошибка")
+                e.printStackTrace()
+//                showToast("Произошла неизвестная ошибка")
             }
         }
     }
 
-    private fun regGetDataSMS() {
-        viewModelScope.launch {
-            try {
-                val regGetDataSMS = regGetDataSMSUseCase.execute()
-
-            } catch (e: Exception) {
-                Log.e(ForegroundService.TAG, "download error", e)
-            }
-        }
-    }
 
     private fun deleteDeviceEventServer() {
         viewModelScope.launch {
@@ -893,7 +893,7 @@ class MainViewModel(
                     error.printStackTrace()
                 }
             } catch (e: Exception) {
-                Log.e(ForegroundService.TAG, "download error", e)
+                e.printStackTrace()
             }
         }
     }
@@ -941,6 +941,7 @@ class MainViewModel(
 
                             insertRegServerInDBUseCase.execute(regDataEntity.copy(com = "rs"))
                             saveRegDataPrefs(regDataDTO)
+                            _listDevices.add(regDataDTO)
                         }
                     }
 //                    setRegDataWIFI(res)
@@ -948,54 +949,13 @@ class MainViewModel(
                     error.printStackTrace()
                 }
             } catch (e: Exception) {
-                Log.e(ForegroundService.TAG, "download error", e)
-                showToast("Произошла неизвестная ошибка")
+                e.printStackTrace()
+//                showToast("Произошла неизвестная ошибка")
             }
         }
     }
 
-//    private fun getGegData(com: String): RequestDataDTO {
-//        val requestEv: RequestDataDTO
-//        val reqDVID = preferences.getString(ForegroundService.REG_DVID, "") ?: ""
-//        val reqTKN = preferences.getString(ForegroundService.REG_TKN, "") ?: ""
-//        val reqTYPEVDString = preferences.getString(ForegroundService.REG_TYPEDV, "")
-//        val reqTYPEVD = if (!reqTYPEVDString.isNullOrEmpty()) {
-//            reqTYPEVDString.toInt()
-//        } else 0
-//        val reqNUMString = preferences.getString(ForegroundService.REG_NUM, "")
-//        val reqNUM = if (!reqNUMString.isNullOrEmpty()) {
-//            reqNUMString.toInt()
-//        } else 0
-//
-//        requestEv = RequestDataDTO(reqDVID, reqTKN, reqTYPEVD, reqNUM, com)
-//        return requestEv
-//    }
 
-//    private fun regSendDataWIFI() {
-//        viewModelScope.launch {
-//            try {
-////                val regReq2 = RequestDataDTO("0123456789qsrt1", "", 5, 4, "reg")
-//                val regSendDataWIFI = regSendDataWIFIUseCase.execute(regReq2)
-//                regSendDataWIFI.onSuccess { result ->
-//
-//                    if (result.status == 10) {
-//                        ////////
-//                        saveRegDataPrefs(regReq2)
-//                        showToast("Отказ в регистрации (устройство уже записано в базе)")
-//
-//                    } else {
-//                        showToast("Регистрация успешна")
-//                    }
-//                }.onFailure { error ->
-//                    error.printStackTrace()
-//                    showToast("Произошла ошибка при регистрации")
-//                }
-//            } catch (e: Exception) {
-//                Log.e(ForegroundService.TAG, "download error", e)
-//                showToast("Произошла неизвестная ошибка")
-//            }
-//        }
-//    }
 
     private fun loadDataFromDatabase() {
         viewModelScope.launch {

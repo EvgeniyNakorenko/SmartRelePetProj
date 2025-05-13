@@ -5,30 +5,33 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 
 @Composable
 fun ToggleIconButton(
+
     isChecked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    interactionSource: MutableInteractionSource? = null,
-    contentDescription: String? = null
+    thumbContent: @Composable (() -> Unit)? = null
 ) {
-    IconButton(
-        onClick = { onCheckedChange(!isChecked) },
+    Switch(
+        checked = isChecked,
+        onCheckedChange = onCheckedChange,
         modifier = modifier,
         enabled = enabled,
-        interactionSource = interactionSource
-    ) {
-        Icon(
-            imageVector = if (isChecked) Icons.Filled.CheckCircle else Icons.Filled.CheckCircle,
-            contentDescription = contentDescription,
-            tint = if (isChecked) Color.Blue
-            else Color.Red
-        )
-    }
+        colors = SwitchDefaults.colors(
+            checkedThumbColor = MaterialTheme.colorScheme.primary,
+            uncheckedThumbColor = MaterialTheme.colorScheme.outline,
+            checkedTrackColor = MaterialTheme.colorScheme.primaryContainer,
+            uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
+        ),
+        thumbContent = thumbContent
+    )
 }

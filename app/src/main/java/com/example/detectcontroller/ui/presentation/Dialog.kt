@@ -45,6 +45,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.detectcontroller.data.remote.remDTO.RegResponseDTO
+import com.example.detectcontroller.data.remote.remDTO.SendServerSettingsMode012DTO
 import com.example.detectcontroller.data.remote.remDTO.SendServerSettingsMode3DTO
 import com.example.detectcontroller.data.remote.remDTO.SendServerSettingsMode4DTO
 import com.example.detectcontroller.data.remote.remDTO.SendServerSettingsMode5DTO
@@ -730,17 +731,57 @@ fun Dialog(
                             mainViewModel.set_releMode3TimeOn(releMode3TimeValue.value)
                         }
                         when (mainViewModel.releModeValue.last()) {
+                            "Выключено"-> {
+
+                                mainViewModel.createEvent(
+                                    ScreenEvent.SendServerSettingsMode012(
+                                        SendServerSettingsMode012DTO(
+                                            dvid = deviceData.dvid,
+                                            tkn = deviceData.tkn,
+                                            typedv = deviceData.typedv,
+                                            num = deviceData.num,
+                                            com = "wv",
+                                            rmode = 0,
+                                        )
+                                    )
+                                )
+                            }
+                            "Тумблер"-> {
+                                mainViewModel.createEvent(
+                                    ScreenEvent.SendServerSettingsMode012(
+                                        SendServerSettingsMode012DTO(
+                                            dvid = deviceData.dvid,
+                                            tkn = deviceData.tkn,
+                                            typedv = deviceData.typedv,
+                                            num = deviceData.num,
+                                            com = "wv",
+                                            rmode = 1,
+                                        )
+                                    )
+                                )
+                            }
+
+                            "Кнопка"-> {
+                                mainViewModel.createEvent(
+                                    ScreenEvent.SendServerSettingsMode012(
+                                        SendServerSettingsMode012DTO(
+                                            dvid = deviceData.dvid,
+                                            tkn = deviceData.tkn,
+                                            typedv = deviceData.typedv,
+                                            num = deviceData.num,
+                                            com = "wv",
+                                            rmode = 2,
+                                        )
+                                    )
+                                )
+                            }
+
                             "На время" -> {
                                 mainViewModel.set_releMode3TimeOn(releMode3TimeValue.value)
                                 mainViewModel.createEvent(
                                     ScreenEvent.SendServerSettingsMode3(
                                         SendServerSettingsMode3DTO(
-//                                            dvid = "0123456789qsrt1",
-//                                            tkn = "",
-//                                            typedv = 5,
-//                                            num = 4,
-//                                            com = "wv",
-//                                            rmode = 3,
+
                                             dvid = deviceData.dvid,
                                             tkn = deviceData.tkn,
                                             typedv = deviceData.typedv,
@@ -812,23 +853,25 @@ fun Dialog(
                         mainViewModel.createEvent(ScreenEvent.ShowDialog(INVISIBLE))
                     }
 
-                    ADD_NEW_REL -> {
-                        if (checkboxValue1.value) {
-                            mainViewModel.createEvent(ScreenEvent.RegWIFI(""))
-                        } else {
-                            mainViewModel.setRegDataWIFI(
-                                RegResponseDTO(
-                                    devid = dvidValue1.value,
-                                    token = tknValue1.value,
-                                    typedv = typedvValue1.value.toInt()
-                                )
-                            )
-                            mainViewModel.createEvent(ScreenEvent.RegSMS(""))
-                        }
-                        mainViewModel.createEvent(ScreenEvent.ShowDialog(INVISIBLE))
-                    }
+//                    ADD_NEW_REL -> {
+//                        if (checkboxValue1.value) {
+//                            mainViewModel.createEvent(ScreenEvent.RegWIFI(""))
+//                        } else {
+//                            mainViewModel.setRegDataWIFI(
+//                                RegResponseDTO(
+//                                    devid = dvidValue1.value,
+//                                    token = tknValue1.value,
+//                                    typedv = typedvValue1.value.toInt()
+//
+//                                )
+//                            )
+//                            mainViewModel.createEvent(ScreenEvent.RegSMS(""))
+//                        }
+//                        mainViewModel.createEvent(ScreenEvent.ShowDialog(INVISIBLE))
+//                    }
 
                     ERROR -> TODO()
+                    ADD_NEW_REL -> TODO()
                 }
 
                 val sendSettingsDTO = SendSettingsDTO(

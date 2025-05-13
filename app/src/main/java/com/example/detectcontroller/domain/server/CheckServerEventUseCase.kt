@@ -1,5 +1,6 @@
 package com.example.detectcontroller.domain.server
 
+import co.yml.charts.common.extensions.isNotNull
 import com.example.detectcontroller.data.remote.remDTO.RequestDataDTO
 import com.example.detectcontroller.data.remote.remDTO.StatusEventServerDTO
 import kotlinx.coroutines.Dispatchers
