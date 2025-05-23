@@ -25,6 +25,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -33,6 +36,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.detectcontroller.R
+import com.example.detectcontroller.data.remote.remDTO.DeleteEventDTO
+import com.example.detectcontroller.data.remote.remDTO.StatusEventServerDTO
+import com.example.detectcontroller.service.ForegroundService.Companion.RELE_MODE_GO
 import com.example.detectcontroller.ui.presentation.MainViewModel.Companion.I_TEXT_FIELD_VALUE1
 import com.example.detectcontroller.ui.presentation.MainViewModel.Companion.I_TEXT_FIELD_VALUE2
 import com.example.detectcontroller.ui.presentation.MainViewModel.Companion.P_TEXT_FIELD_VALUE1
@@ -50,18 +56,50 @@ fun SingleDevice(
 ) {
 
     val uiState by mainViewModel.uiState.collectAsState()
+    var savedId : Int? = 0
+
+
+    val finalEventState by mainViewModel.finalEventState.collectAsState()
+    val eventsListState by mainViewModel.eventServerList.collectAsState()
+    val itemsEvent = eventsListState.reversed()
+    var isVisibleAlertU by remember { mutableStateOf(false) }
+    var isVisibleAlertI by remember { mutableStateOf(false) }
+    var isVisibleAlertP by remember { mutableStateOf(false) }
+
+//    preferences
+//        .edit()
+//        .putInt("SAVEDID", finalEventState?.id ?: 0)
+//        .apply()
 
     LaunchedEffect(Unit) {
         while (true) {
             mainViewModel.createEvent(ScreenEvent.LoadLastEventServerFromDB(""))
             mainViewModel.createEvent(ScreenEvent.LoadEventServerFromDB(""))
             delay(5000)
+            savedId = preferences.getInt("SAVEDID",0) ?: 0
+
+            eventsListState.reversed().take(20).forEach {
+                if (it.name == "evu" && it.id > (savedId ?: 0)){
+                    isVisibleAlertU = true
+                }
+                if (it.name == "evi" && it.id > (savedId ?: 0)){
+                    isVisibleAlertI = true
+                }
+                if (it.name == "evi" && it.id > (savedId ?: 0)){
+                    isVisibleAlertP = true
+                }
+                if (it.name == "gomode"){
+                    mainViewModel.createEvent(ScreenEvent.DeleteEventAlarmFromServer(""))
+                }
+            }
         }
     }
-    val finalEventState by mainViewModel.finalEventState.collectAsState()
+
 
     val releName = mainViewModel.textFieldValue1SETREL.last().toString()
     val releMode = mainViewModel.releModeValue.last()
+
+
 
     Column() {
 //    Column(modifier = Modifier.padding(12.dp)) {
@@ -96,11 +134,11 @@ fun SingleDevice(
                     onCheckedChange = {
                         mainViewModel.createEvent(ScreenEvent.SendServerGoMode(""))
                         mainViewModel.set_buttonGoVisib(false)
-                        if (isCheckedVar) {
-                            mainViewModel.set_releModeGO(false)
-                        }else{
-                            mainViewModel.set_releModeGO(true)
-                        }
+//                        if (isCheckedVar) {
+//                            mainViewModel.set_releModeGO(false)
+//                        }else{
+//                            mainViewModel.set_releModeGO(true)
+//                        }
 
                     },
                     enabled = releModeGoVisVal,
@@ -123,6 +161,7 @@ fun SingleDevice(
                 }
 
                 IconButton(
+                    enabled = releModeGoVisVal,
                     onClick = {
 //                        showDialog.value = true
                         mainViewModel.createEvent(
@@ -148,42 +187,45 @@ fun SingleDevice(
                         "Напряжение, В",
                         Color.White,
 //                        Color.Magenta,
-                        if ((finalEventState?.name ?: "") == "evu") finalEventState else null
+                        if (isVisibleAlertU) true else false
+//                        if ((finalEventState?.name ?: "") == "evu") finalEventState else null
                     ),
                     Item(
                         uiState.irl,
                         "Ток, А",
                         Color.White,
 //                        Color(206, 210, 58),
-                        if ((finalEventState?.name ?: "") == "evi") finalEventState else null
+                        if (isVisibleAlertI) true else false
+//                        if ((finalEventState?.name ?: "") == "evi") finalEventState else null
                     ),
                     Item(
                         uiState.pwr,
                         "Мощность, Вт",
                         Color.White,
 //                        Color.Cyan,
-                        if ((finalEventState?.name ?: "") == "evp") finalEventState else null
+                        if (isVisibleAlertP) true else false
+//                        if ((finalEventState?.name ?: "") == "evp") finalEventState else null
                     ),
                     Item(
                         uiState.tmp,
                         "Температура, °C",
                         Color.White,
 //                        Color(0xFFFFC0CB),
-                        if ((finalEventState?.name ?: "") == "evt") finalEventState else null
+                        false
                     ),
                     Item(
                         "Count",
                         "Счетчик, кВт*ч",
                         Color.White,
 //                        Color.Gray,
-                        null
+                        false
                     ), // Swapped position
                     Item(
                         "Tar",
                         "Тарификатор, ₽",
                         Color.White,
 //                        Color(255, 165, 0),
-                        null
+                        false
                     )
                 )
 
@@ -236,15 +278,38 @@ fun SingleDevice(
                                                     y = (-12).dp
                                                 )
                                         ) {
+
                                             Icon(
                                                 painter = painterResource(id = R.drawable.baseline_report_problem_24),
                                                 contentDescription = "Предупреждение",
                                                 tint = Color.Red,
-                                                modifier = Modifier.alpha(if (item.eventAlarm != null) 1.0f else 0.0f)
-
+//                                                modifier = Modifier.alpha(
+//
+//                                                    if (isVisibleAlertU || isVisibleAlertI || isVisibleAlertP) 1.0f else 0.0f
+//
+//                                                )
+                                                modifier = Modifier.alpha(if ( item.eventAlarm == true ) 1.0f else 0.0f)
                                             )
-                                        }
 
+//                                            Icon(
+//                                                painter = painterResource(id = R.drawable.baseline_report_problem_24),
+//                                                contentDescription = "Предупреждение",
+//                                                tint = Color.Red,
+//                                                modifier = Modifier.alpha(
+//                                                    if (item.eventAlarm != null &&
+//                                                        (item.eventAlarm.id > savedId || savedId == 0) &&
+//                                                        when (item.text) {
+//                                                            uiState.url -> (finalEventState?.name ?: "") == "evu"
+//                                                            uiState.irl -> (finalEventState?.name ?: "") == "evi"
+//                                                            uiState.pwr -> (finalEventState?.name ?: "") == "evp"
+//                                                            uiState.tmp -> (finalEventState?.name ?: "") == "evt"
+//                                                            else -> true
+//                                                        }
+//                                                    ) 1.0f else 0.0f
+//                                                )
+//                                            )
+
+                                        }
 
                                         IconButton(
                                             onClick = {

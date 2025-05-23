@@ -173,13 +173,9 @@ fun New(mainViewModel: MainViewModel,) {
                         .weight(1f)
                         .border(1.dp, Color.LightGray, shape = RoundedCornerShape(8.dp)),
                     onClick = {
-                        // Handle OK action
                         if (checkboxValue1.value) {
-                            // Wi-Fi registration logic
                             mainViewModel.createEvent(ScreenEvent.RegWIFI(""))
                         } else {
-                            // Manual registration logic
-                            // You can access the values through dvidValue1.value, tknValue1.value, etc.
                             mainViewModel.setRegDataWIFI(
                                 RegResponseDTO(
                                     devid = dvidValue1.value,

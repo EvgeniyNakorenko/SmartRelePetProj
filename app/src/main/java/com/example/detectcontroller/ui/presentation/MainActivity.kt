@@ -86,7 +86,7 @@ class MainActivity : ComponentActivity() {
     private val uiScope = CoroutineScope(Dispatchers.Main + viewModelJob)
     private lateinit var preferences: SharedPreferences
     private lateinit var viewModel: MainViewModel
-    private  var gomodeVar : Boolean = false
+//    private  var gomodeVar : Boolean = false
 
     private lateinit var getAllRegServerFromDBUseCase: GetAllRegServerFromDBUseCase
 
@@ -127,7 +127,7 @@ class MainActivity : ComponentActivity() {
         preferences =
             this.getSharedPreferences(MainViewModel.REL_SETTINGS, Context.MODE_PRIVATE)
 
-        gomodeVar = (preferences.getBoolean(RELE_MODE_GO, false))
+//        gomodeVar = (preferences.getBoolean(RELE_MODE_GO, false))
 
         setContent {
             MaterialTheme {
@@ -135,22 +135,22 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        if (!preferences.getBoolean(RELE_MODE_GO, false)) {
-            viewModel.set_releModeGO(false)
-        } else viewModel.set_releModeGO(true)
+//        if (!preferences.getBoolean(RELE_MODE_GO, false)) {
+//            viewModel.set_releModeGO(false)
+//        } else viewModel.set_releModeGO(true)
 
     }
 
-    override fun onResume() {
-        super.onResume()
-        checkJob = CoroutineScope(Dispatchers.Main).launch {
-            while (isActive) {
-                checkReleMode()
-                delay(2000)
-            }
-        }
-
-    }
+//    override fun onResume() {
+//        super.onResume()
+//        checkJob = CoroutineScope(Dispatchers.Main).launch {
+//            while (isActive) {
+////                checkReleMode()
+//                delay(2000)
+//            }
+//        }
+//
+//    }
 
     override fun onPause() {
         super.onPause()
@@ -162,18 +162,13 @@ class MainActivity : ComponentActivity() {
         viewModelJob.cancel()
     }
 
-    private fun checkReleMode() {
-//        gomodeVar = (preferences.getBoolean(RELE_MODE_GO, false))
-//        if (!(preferences.getBoolean(RELE_MODE_GO, false) ?: false)) {
-        if (preferences.getBoolean(RELE_MODE_GO, false) != gomodeVar) {
-            viewModel.set_buttonGoVisib(true)
-//            viewModel.set_releModeGO(false)
-            gomodeVar = !gomodeVar
-        } else {
-//            viewModel.set_releModeGO(true)
-
-        }
-    }
+//    private fun checkReleMode() {
+//        if (preferences.getBoolean(RELE_MODE_GO, false) != gomodeVar) {
+//
+//            viewModel.set_buttonGoVisib(true)
+//            gomodeVar = !gomodeVar
+//        }
+//    }
 
     private fun startBackgroundTask(viewModel: MainViewModel) {
         uiScope.launch {
@@ -204,7 +199,7 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                 }
-                delay(10_000)
+                delay(60_000)
             }
         }
     }

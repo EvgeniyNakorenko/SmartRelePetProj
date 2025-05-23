@@ -43,4 +43,7 @@ interface UiStateDao {
 
     @Query("DELETE FROM last_event_server WHERE id = :id")
     suspend fun deleteLastEventServerById(id: Int)
+
+    @Query("DELETE FROM event_server WHERE id = :id")
+    suspend fun deleteLastEventDBById(id: Int)
 }

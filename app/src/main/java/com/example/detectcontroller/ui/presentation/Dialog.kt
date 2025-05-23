@@ -13,12 +13,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenuItem
@@ -29,12 +31,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -44,7 +41,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.detectcontroller.data.remote.remDTO.RegResponseDTO
 import com.example.detectcontroller.data.remote.remDTO.SendServerSettingsMode012DTO
 import com.example.detectcontroller.data.remote.remDTO.SendServerSettingsMode3DTO
 import com.example.detectcontroller.data.remote.remDTO.SendServerSettingsMode4DTO
@@ -60,8 +56,12 @@ import com.example.detectcontroller.ui.presentation.DialogState.SETTINGS_REL
 import com.example.detectcontroller.ui.presentation.DialogState.SETTINGS_TAR
 import com.example.detectcontroller.ui.presentation.DialogState.SETTINGS_TEMP
 import com.example.detectcontroller.ui.presentation.DialogState.SETTINGS_U
+import com.maxkeppeker.sheets.core.models.base.UseCaseState
+import com.maxkeppeler.sheets.clock.ClockDialog
+import com.maxkeppeler.sheets.clock.models.ClockConfig
+import com.maxkeppeler.sheets.clock.models.ClockSelection
 
-@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 fun Dialog(
     mainViewModel: MainViewModel,
@@ -333,33 +333,289 @@ fun Dialog(
                                         "Таймер",
                                         "Цикл"
                                     ),
-                                    mainViewModel = mainViewModel
+//                                    mainViewModel = mainViewModel
+                                    valueDefault = mainViewModel.releModeValue.last(),
+                                    labelSt = "Режимы работы реле",
+                                    onOptionSelected = { index ->
+                                        mainViewModel.set_releModeValue(index)
+                                        mainViewModel.createEvent(ScreenEvent.OpenSettingsRel(""))
+                                    }
                                 )
 
                                 Spacer(modifier = Modifier.height(8.dp))
 
                                 when (mainViewModel.releModeValue.last()) {
                                     "На время" -> {
-                                        val tOn = "00:46:22"
+
                                         Column {
                                             Text("На время")
-                                            Text("Время включения реле : $tOn")
+                                            Text("Время включения реле : ${mainViewModel.releMode3TimeOn.lastOrNull() ?: "00:00:00"}")
+
+                                            val hoursStateM3 = remember {
+                                                mutableStateOf(
+                                                    mainViewModel.releMode3TimeOn.lastOrNull()
+                                                        ?.substringBefore(':') ?: "0"
+                                                )
+                                            }
+                                            val minutesStateM3 = remember {
+                                                mutableStateOf(
+                                                    mainViewModel.releMode3TimeOn.lastOrNull()
+                                                        ?.substringAfter(':')?.substringBefore(':')
+                                                        ?: "0"
+                                                )
+                                            }
+                                            val secondsStateM3 = remember {
+                                                mutableStateOf(
+                                                    mainViewModel.releMode3TimeOn.lastOrNull()
+                                                        ?.substringAfterLast(':') ?: "0"
+                                                )
+                                            }
+
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.SpaceBetween
+                                            ) {
+                                                CustomSpinner(
+                                                    modifier = Modifier.width(90.dp),
+                                                    options = (0..23).map {
+                                                        it.toString().padStart(2, '0')
+                                                    },
+//                                                    options = (0..23).toList().map { it.toString() },
+                                                    valueDefault = hoursStateM3.value,
+//                                                    valueDefault = "00",
+                                                    labelSt = "h",
+                                                    onOptionSelected = { hours ->
+                                                        hoursStateM3.value = hours.toString()
+
+                                                        releMode3TimeValue.value =
+                                                            "${hoursStateM3.value}:${minutesStateM3.value}:${secondsStateM3.value}"
+//                                                        mainViewModel.updateReleMode3Time(hours, minutesState.value, secondsState.value)
+                                                    }
+                                                )
+                                                CustomSpinner(
+                                                    modifier = Modifier.width(90.dp),
+                                                    options = (0..59).map {
+                                                        it.toString().padStart(2, '0')
+                                                    },
+                                                    valueDefault = minutesStateM3.value,
+                                                    labelSt = "m",
+                                                    onOptionSelected = { minutes ->
+                                                        minutesStateM3.value = minutes.toString()
+
+                                                        releMode3TimeValue.value =
+                                                            "${hoursStateM3.value}:${minutesStateM3.value}:${secondsStateM3.value}"
+
+                                                    }
+                                                )
+
+                                                CustomSpinner(
+                                                    modifier = Modifier.width(90.dp),
+                                                    options = (0..59).map {
+                                                        it.toString().padStart(2, '0')
+                                                    },
+                                                    valueDefault = secondsStateM3.value,
+                                                    labelSt = "s",
+                                                    onOptionSelected = { seconds ->
+                                                        secondsStateM3.value = seconds.toString()
+                                                        releMode3TimeValue.value =
+                                                            "${hoursStateM3.value}:${minutesStateM3.value}:${secondsStateM3.value}"
+
+                                                    }
+                                                )
+                                            }
+
                                         }
 //                                        val parts = tOn.split(":").map { it.toInt() }
 //                                        releMode3TimeValue.value = Triple(parts[0], parts[1], parts[2])
-                                        releMode3TimeValue.value = tOn
+//                                        releMode3TimeValue.value = tOn
                                     }
 
                                     "Таймер" -> {
 
-                                        val tRTCOn = "15:46:22"
-                                        val tRTCOff = "18:15:33"
+                                        val hoursStateM4St = remember {
+                                            mutableStateOf(
+                                                mainViewModel.releMode4Time.lastOrNull()?.first
+                                                    ?.substringBefore(':') ?: "0"
+                                            )
+                                        }
+                                        val minutesStateM4St = remember {
+                                            mutableStateOf(
+                                                mainViewModel.releMode4Time.lastOrNull()?.first
+                                                    ?.substringAfter(':')?.substringBefore(':')
+                                                    ?: "0"
+                                            )
+                                        }
+                                        val secondsStateM4St = remember {
+                                            mutableStateOf(
+                                                mainViewModel.releMode4Time.lastOrNull()?.first
+                                                    ?.substringAfterLast(':') ?: "0"
+                                            )
+                                        }
+
+                                        val hoursStateM4Fi = remember {
+                                            mutableStateOf(
+                                                mainViewModel.releMode4Time.lastOrNull()?.second
+                                                    ?.substringBefore(':') ?: "0"
+                                            )
+                                        }
+                                        val minutesStateM4Fi = remember {
+                                            mutableStateOf(
+                                                mainViewModel.releMode4Time.lastOrNull()?.second
+                                                    ?.substringAfter(':')?.substringBefore(':')
+                                                    ?: "0"
+                                            )
+                                        }
+                                        val secondsStateM4Fi = remember {
+                                            mutableStateOf(
+                                                mainViewModel.releMode4Time.lastOrNull()?.second
+                                                    ?.substringAfterLast(':') ?: "0"
+                                            )
+                                        }
+
+//                                        val tRTCOn = "15:46:22"
+//                                        val tRTCOff = "18:15:33"
                                         Column {
                                             Text("Таймер")
-                                            Text("Время включения реле : $tRTCOn")
-                                            Text("Время включения реле : $tRTCOff")
+//                                            Text("Время включения реле : ${mainViewModel.releMode4Time.lastOrNull()?.first ?: "00:00:00"}}")
+//                                            Text("Время включения реле : ${mainViewModel.releMode4Time.lastOrNull()?.second ?: "23:59:59"}}")
+
+
+                                            Column {
+                                                Row(
+                                                    modifier = Modifier.fillMaxWidth(),
+                                                    verticalAlignment = Alignment.CenterVertically,
+                                                    horizontalArrangement = Arrangement.SpaceBetween
+                                                ) {
+
+                                                    CustomSpinner(
+                                                        modifier = Modifier.width(90.dp),
+                                                        options = (0..23).map {
+                                                            it.toString().padStart(2, '0')
+                                                        },
+                                                        valueDefault = hoursStateM4St.value,
+                                                        labelSt = "h",
+                                                        onOptionSelected = { hours ->
+                                                            hoursStateM4St.value = hours.toString()
+                                                            releMode4TimeValue.value =
+                                                                Pair(
+                                                                    "${hoursStateM4St.value}:${minutesStateM4St.value}:${secondsStateM4St.value}",
+                                                                    mainViewModel.releMode4Time.lastOrNull()?.second
+                                                                        ?: "23:59:59"
+                                                                )
+                                                        }
+                                                    )
+
+                                                    CustomSpinner(
+                                                        modifier = Modifier.width(90.dp),
+                                                        options = (0..59).map {
+                                                            it.toString().padStart(2, '0')
+                                                        },
+                                                        valueDefault = minutesStateM4St.value,
+                                                        labelSt = "m",
+                                                        onOptionSelected = { minutes ->
+                                                            minutesStateM4St.value =
+                                                                minutes.toString()
+                                                            releMode4TimeValue.value =
+                                                                Pair(
+                                                                    "${hoursStateM4St.value}:${minutesStateM4St.value}:${secondsStateM4St.value}",
+                                                                    mainViewModel.releMode4Time.lastOrNull()?.second
+                                                                        ?: "23:59:59"
+                                                                )
+                                                        }
+                                                    )
+                                                    CustomSpinner(
+                                                        modifier = Modifier.width(90.dp),
+                                                        options = (0..59).map {
+                                                            it.toString().padStart(2, '0')
+                                                        },
+                                                        valueDefault = secondsStateM4St.value,
+                                                        labelSt = "s",
+                                                        onOptionSelected = { seconds ->
+                                                            secondsStateM4St.value =
+                                                                seconds.toString()
+                                                            releMode4TimeValue.value =
+                                                                Pair(
+                                                                    "${hoursStateM4St.value}:${minutesStateM4St.value}:${secondsStateM4St.value}",
+                                                                    mainViewModel.releMode4Time.lastOrNull()?.second
+                                                                        ?: "23:59:59"
+                                                                )
+                                                        }
+                                                    )
+
+                                                }
+                                                Spacer(modifier = Modifier.height(16.dp))
+                                                Row(
+                                                    modifier = Modifier.fillMaxWidth(),
+                                                    verticalAlignment = Alignment.CenterVertically,
+                                                    horizontalArrangement = Arrangement.SpaceBetween
+                                                ) {
+
+                                                    CustomSpinner(
+                                                        modifier = Modifier.width(90.dp),
+                                                        options = (0..23).map {
+                                                            it.toString().padStart(2, '0')
+                                                        },
+                                                        valueDefault = hoursStateM4Fi.value,
+                                                        labelSt = "h",
+                                                        onOptionSelected = { hours ->
+                                                            hoursStateM4Fi.value = hours.toString()
+                                                            releMode4TimeValue.value =
+                                                                Pair(
+                                                                    mainViewModel.releMode4Time.lastOrNull()?.first
+                                                                        ?: "23:59:59",
+                                                                    "${hoursStateM4St.value}:${minutesStateM4St.value}:${secondsStateM4St.value}"
+                                                                )
+                                                        }
+                                                    )
+
+                                                    CustomSpinner(
+                                                        modifier = Modifier.width(90.dp),
+                                                        options = (0..23).map {
+                                                            it.toString().padStart(2, '0')
+                                                        },
+                                                        valueDefault = minutesStateM4Fi.value,
+                                                        labelSt = "h",
+                                                        onOptionSelected = { minutes ->
+                                                            minutesStateM4Fi.value =
+                                                                minutes.toString()
+                                                            releMode4TimeValue.value =
+                                                                Pair(
+                                                                    mainViewModel.releMode4Time.lastOrNull()?.first
+                                                                        ?: "23:59:59",
+                                                                    "${hoursStateM4St.value}:${minutesStateM4St.value}:${secondsStateM4St.value}"
+                                                                )
+                                                        }
+                                                    )
+                                                    CustomSpinner(
+                                                        modifier = Modifier.width(90.dp),
+                                                        options = (0..23).map {
+                                                            it.toString().padStart(2, '0')
+                                                        },
+                                                        valueDefault = secondsStateM4Fi.value,
+                                                        labelSt = "h",
+                                                        onOptionSelected = { seconds ->
+                                                            secondsStateM4Fi.value =
+                                                                seconds.toString()
+                                                            releMode4TimeValue.value =
+                                                                Pair(
+                                                                    mainViewModel.releMode4Time.lastOrNull()?.first
+                                                                        ?: "23:59:59",
+                                                                    "${hoursStateM4St.value}:${minutesStateM4St.value}:${secondsStateM4St.value}"
+                                                                )
+                                                        }
+                                                    )
+
+                                                }
+                                            }
+
+
                                         }
-                                        releMode4TimeValue.value = Pair(tRTCOn, tRTCOff)
+
+
+
+
+//                                        releMode4TimeValue.value = Pair(tRTCOn, tRTCOff)
                                     }
 
                                     "Цикл" -> {
@@ -466,34 +722,34 @@ fun Dialog(
 
 //                    var isAlarmEventVisible by remember { mutableStateOf(mainViewModel.eventAlarmState.value) }
 
-                    Text(
-                        text = if (mainViewModel.screenState.value.dialogState == SETTINGS_REL) "Журнал" else "События",
-
-                        modifier = Modifier
-                            .clickable(
-                                onClick = {
-                                    isVisibleAlarmEventMenu = !isVisibleAlarmEventMenu
-                                },
-                                enabled = when (mainViewModel.screenState.value.dialogState) {
-                                    SETTINGS_I -> {
-                                        isAlarmEventVisibleState?.name == ("evi" ?: false)
-                                    }
-
-                                    SETTINGS_U -> {
-                                        isAlarmEventVisibleState?.name == ("evu" ?: false)
-                                    }
-
-                                    SETTINGS_P -> {
-                                        isAlarmEventVisibleState?.name == ("evp" ?: false)
-
-                                    }
-
-                                    SETTINGS_REL -> true
-                                    else -> false
-                                }
-                            ),
-                        fontSize = 22.sp
-                    )
+//                    Text(
+//                        text = if (mainViewModel.screenState.value.dialogState == SETTINGS_REL) "Журнал" else "События",
+//
+//                        modifier = Modifier
+//                            .clickable(
+//                                onClick = {
+//                                    isVisibleAlarmEventMenu = !isVisibleAlarmEventMenu
+//                                },
+//                                enabled = when (mainViewModel.screenState.value.dialogState) {
+//                                    SETTINGS_I -> {
+//                                        isAlarmEventVisibleState?.name == ("evi" ?: false)
+//                                    }
+//
+//                                    SETTINGS_U -> {
+//                                        isAlarmEventVisibleState?.name == ("evu" ?: false)
+//                                    }
+//
+//                                    SETTINGS_P -> {
+//                                        isAlarmEventVisibleState?.name == ("evp" ?: false)
+//
+//                                    }
+//
+//                                    SETTINGS_REL -> true
+//                                    else -> false
+//                                }
+//                            ),
+//                        fontSize = 22.sp
+//                    )
                     var heightValue =
                         if (mainViewModel.screenState.value.dialogState == SETTINGS_REL) 500.dp else 150.dp
                     Column(
@@ -731,7 +987,7 @@ fun Dialog(
                             mainViewModel.set_releMode3TimeOn(releMode3TimeValue.value)
                         }
                         when (mainViewModel.releModeValue.last()) {
-                            "Выключено"-> {
+                            "Выключено" -> {
 
                                 mainViewModel.createEvent(
                                     ScreenEvent.SendServerSettingsMode012(
@@ -746,7 +1002,8 @@ fun Dialog(
                                     )
                                 )
                             }
-                            "Тумблер"-> {
+
+                            "Тумблер" -> {
                                 mainViewModel.createEvent(
                                     ScreenEvent.SendServerSettingsMode012(
                                         SendServerSettingsMode012DTO(
@@ -761,7 +1018,7 @@ fun Dialog(
                                 )
                             }
 
-                            "Кнопка"-> {
+                            "Кнопка" -> {
                                 mainViewModel.createEvent(
                                     ScreenEvent.SendServerSettingsMode012(
                                         SendServerSettingsMode012DTO(
@@ -829,12 +1086,7 @@ fun Dialog(
                                 mainViewModel.createEvent(
                                     ScreenEvent.SendServerSettingsMode5(
                                         SendServerSettingsMode5DTO(
-//                                            dvid = "0123456789qsrt1",
-//                                            tkn = "",
-//                                            typedv = 5,
-//                                            num = 4,
-//                                            com = "wv",
-//                                            rmode = 5,
+
                                             dvid = deviceData.dvid,
                                             tkn = deviceData.tkn,
                                             typedv = deviceData.typedv,
@@ -852,23 +1104,6 @@ fun Dialog(
                         mainViewModel.createEvent(ScreenEvent.OpenSettingsRel(""))
                         mainViewModel.createEvent(ScreenEvent.ShowDialog(INVISIBLE))
                     }
-
-//                    ADD_NEW_REL -> {
-//                        if (checkboxValue1.value) {
-//                            mainViewModel.createEvent(ScreenEvent.RegWIFI(""))
-//                        } else {
-//                            mainViewModel.setRegDataWIFI(
-//                                RegResponseDTO(
-//                                    devid = dvidValue1.value,
-//                                    token = tknValue1.value,
-//                                    typedv = typedvValue1.value.toInt()
-//
-//                                )
-//                            )
-//                            mainViewModel.createEvent(ScreenEvent.RegSMS(""))
-//                        }
-//                        mainViewModel.createEvent(ScreenEvent.ShowDialog(INVISIBLE))
-//                    }
 
                     ERROR -> TODO()
                     ADD_NEW_REL -> TODO()
@@ -897,7 +1132,11 @@ fun Dialog(
                     tlh = mainViewModel.textFieldValue1T.last(),
                 )
 
-                if (mainViewModel.screenState.value.dialogState != ADD_NEW_REL) {
+                if (mainViewModel.screenState.value.dialogState == SETTINGS_I ||
+                    mainViewModel.screenState.value.dialogState == SETTINGS_U ||
+                    mainViewModel.screenState.value.dialogState == SETTINGS_P ||
+                    mainViewModel.screenState.value.dialogState == SETTINGS_TEMP
+                ) {
                     mainViewModel.createEvent(ScreenEvent.SendSettingsServer(sendSettingsDTO))
                 }
 
@@ -938,24 +1177,40 @@ enum class DialogState {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CustomSpinner(
+    modifier: Modifier = Modifier,
     options: List<String>,
-    mainViewModel: MainViewModel,
+    valueDefault: String,
+    labelSt: String,
+    onOptionSelected: (Int) -> Unit
+//    mainViewModel: MainViewModel,
 //    onOptionSelected: (String) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
-//    var selectedOption by remember { mutableStateOf(options.first()) }
+
+    // Форматируем значение для отображения (добавляем ведущий ноль если нужно)
+    val displayedValue = remember(valueDefault) {
+        valueDefault.toIntOrNull()?.toString()?.padStart(2, '0') ?: valueDefault.padStart(2, '0')
+    }
 
     ExposedDropdownMenuBox(
+        modifier = modifier,
         expanded = expanded,
         onExpandedChange = { expanded = !expanded }
     ) {
         TextField(
             modifier = Modifier.menuAnchor(),
-            value = mainViewModel.releModeValue.last(),
+            value = displayedValue,
+//            value = mainViewModel.releModeValue.last(),
             onValueChange = { /* Не изменять */ },
             readOnly = true,
-            label = { Text("Режимы работы реле") },
-            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            label = { Text(labelSt) },
+//            label = { Text("Режимы работы реле") },
+            trailingIcon = {
+                ExposedDropdownMenuDefaults.TrailingIcon(
+                    expanded = expanded,
+                    modifier = Modifier.size(16.dp)
+                )
+            },
             colors = ExposedDropdownMenuDefaults.textFieldColors()
         )
 
@@ -966,8 +1221,9 @@ fun CustomSpinner(
             options.forEachIndexed { index, option ->
                 DropdownMenuItem(
                     onClick = {
-                        mainViewModel.set_releModeValue(index)
-                        mainViewModel.createEvent(ScreenEvent.OpenSettingsRel(""))
+//                        mainViewModel.set_releModeValue(index)
+//                        mainViewModel.createEvent(ScreenEvent.OpenSettingsRel(""))
+                        onOptionSelected(index)
                         expanded = false
                     },
                     text = { Text(text = option) }
@@ -975,8 +1231,6 @@ fun CustomSpinner(
             }
         }
     }
-
-
 }
 
 fun formatTriple(triple: Triple<Int, Int, Int>): String {
@@ -987,4 +1241,30 @@ fun formatTriple(triple: Triple<Int, Int, Int>): String {
 
 fun formatPair(pair: Pair<Int, Int>): String {
     return "${pair.first.toString().padStart(2, '0')}:${pair.second.toString().padStart(2, '0')}"
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TimePickerWithSeconds() {
+    var showDialog by remember { mutableStateOf(false) }
+    var selectedTime by remember { mutableStateOf("") }
+//    val clockState = rememberClockState()
+
+    Button(onClick = { showDialog = true }) {
+        Text("Выбрать время")
+    }
+
+    if (showDialog) {
+        ClockDialog(
+            selection = ClockSelection.HoursMinutesSeconds { h, m, s ->
+                selectedTime = "$h:$m:$s"
+                showDialog = false
+            },
+            config = ClockConfig(is24HourFormat = true),
+            state = UseCaseState(),
+        )
+    }
+
+    Text("Выбрано: $selectedTime")
 }

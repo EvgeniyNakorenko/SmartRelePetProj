@@ -7,5 +7,5 @@ data class Item(
     val text: String,
     val description: String,
     val color: Color,
-    val eventAlarm: StatusEventServerDTO?
+    val eventAlarm: Boolean
 )

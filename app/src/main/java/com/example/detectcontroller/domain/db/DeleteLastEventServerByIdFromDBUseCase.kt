@@ -8,6 +8,7 @@ class DeleteLastEventServerByIdFromDBUseCase(private val database: AppDatabase) 
     suspend fun execute(id: Int) {
         return withContext(Dispatchers.IO) {
             database.uiStateDao().deleteLastEventServerById(id)
+            database.uiStateDao().deleteLastEventDBById(id)
         }
     }
 }

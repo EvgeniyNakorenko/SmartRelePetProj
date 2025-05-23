@@ -49,7 +49,7 @@ fun MainScreen(mainViewModel: MainViewModel,
             composable(Screen.Log.route,
                 enterTransition = { slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left) },
                 exitTransition = { slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Left) }
-            ){ Log(mainViewModel)}
+            ){ Log(mainViewModel, preferences)}
         }
     }
 }

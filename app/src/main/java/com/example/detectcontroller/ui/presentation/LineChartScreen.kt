@@ -138,7 +138,7 @@ class LineChartScreen {
 
     @Composable
     fun DisplayChartI(viewModel: MainViewModel) {
-        val uiStates by viewModel.uiStateList.collectAsState()
+        val uiStates by viewModel.uiStateListGraph.collectAsState()
         val reversedUiStates = uiStates.reversed()
         val pointsDataI = convertUiStatesToPointsI(reversedUiStates)
         val configuration = LocalConfiguration.current
@@ -173,7 +173,7 @@ class LineChartScreen {
 
     @Composable
     fun DisplayChartU(viewModel: MainViewModel) {
-        val uiStates by viewModel.uiStateList.collectAsState()
+        val uiStates by viewModel.uiStateListGraph.collectAsState()
         val reversedUiStates = uiStates.reversed()
         val pointsDataU = convertUiStatesToPointsU(reversedUiStates)
         val configuration = LocalConfiguration.current
@@ -207,7 +207,7 @@ class LineChartScreen {
 
     @Composable
     fun DisplayChartP(viewModel: MainViewModel) {
-        val uiStates by viewModel.uiStateList.collectAsState()
+        val uiStates by viewModel.uiStateListGraph.collectAsState()
         val reversedUiStates = uiStates.reversed()
         val pointsDataP = convertUiStatesToPointsP(reversedUiStates)
         val configuration = LocalConfiguration.current

@@ -1,5 +1,6 @@
 package com.example.detectcontroller.ui.presentation.nav
 
+import android.content.SharedPreferences
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,7 +28,7 @@ import com.example.detectcontroller.ui.presentation.MainViewModel
 
 
 @Composable
-fun Log(mainViewModel: MainViewModel) {
+fun Log(mainViewModel: MainViewModel , preferences: SharedPreferences) {
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
@@ -35,39 +36,50 @@ fun Log(mainViewModel: MainViewModel) {
         Text("Events log", style = MaterialTheme.typography.headlineMedium)
         val eventsListState by mainViewModel.eventServerList.collectAsState()
         val itemsEvent = eventsListState.reversed()
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(1),
-            contentPadding = PaddingValues(4.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            items(itemsEvent) { item ->
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .fillMaxHeight()
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(Color.LightGray)
-//                                            .padding(8.dp)
-                ) {
-                    Column(
+
+
+        if (!itemsEvent.isNullOrEmpty()) {
+
+
+            preferences
+                .edit()
+                .putInt("SAVEDID", eventsListState.last().id)
+                .apply()
+
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(1),
+                contentPadding = PaddingValues(4.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                items(itemsEvent) { item ->
+                    Box(
+                        contentAlignment = Alignment.Center,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(8.dp)
+                            .fillMaxHeight()
+                            .clip(RoundedCornerShape(8.dp))
                             .background(Color.LightGray)
+//                                            .padding(8.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(8.dp)
+                                .background(Color.LightGray)
 //                                                .clip(RoundedCornerShape(8.dp))
 
-                    ) {
+                        ) {
 //                                        Text(text = item.toString(), color = Color.Black)
-                        Text(text = "ID: ${item.id}", color = Color.Black)
-                        Text(text = "Time: ${item.timeev}", color = Color.Black)
-                        Text(
-                            text = "State: ${item.rstate}",
-                            color = Color.Black
-                        )
-                        Text(text = "Value: ${item.value}", color = Color.Black)
-                        Text(text = "Name: ${item.name}", color = Color.Black)
+                            Text(text = "ID: ${item.id}", color = Color.Black)
+                            Text(text = "Time: ${item.timeev}", color = Color.Black)
+                            Text(
+                                text = "State: ${item.rstate}",
+                                color = Color.Black
+                            )
+                            Text(text = "Value: ${item.value}", color = Color.Black)
+                            Text(text = "Name: ${item.name}", color = Color.Black)
+                        }
                     }
                 }
             }

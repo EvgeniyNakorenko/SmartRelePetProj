@@ -143,7 +143,7 @@ class ForegroundService() : Service() {
 
     private fun startEventServerLoading() {
         scope.launch {
-            var regData:RegServerEntity? = null
+            var regData: RegServerEntity? = null
 
             while (isActive) {
                 try {
@@ -157,73 +157,90 @@ class ForegroundService() : Service() {
                         }
                     }
 
-                        if (!regData.isNotNull()) println("no regData")
-                        val loadReq = regData?.let {
-                            RequestDataDTO(
-                                dvid = regData.dvid,
-                                tkn = regData.tkn,
-                                typedv = regData.typedv,
-                                num = regData.num,
-                                com = "rev"
-                            )
-                        }
+                    if (!regData.isNotNull()) println("no regData")
+                    val loadReq = regData?.let {
+                        RequestDataDTO(
+                            dvid = regData.dvid,
+                            tkn = regData.tkn,
+                            typedv = regData.typedv,
+                            num = regData.num,
+                            com = "rev"
+                        )
+                    }
 
                     val event = loadReq?.let { checkServerEventUseCase.execute(it) }
                     delay(10)
 
-                    var lastEvent: StatusEventServerDTO? =
-                        getOneLastEventServerFromDBUseCase.execute(
-                            preferences.getInt(
-                                "EVENT_ID",
-                                0
-                            )
-                        )
+//                    var lastEvent: StatusEventServerDTO? =
+//                        getOneLastEventServerFromDBUseCase.execute(
+//                            preferences.getInt(
+//                                "EVENT_ID",
+//                                0
+//                            )
+//                        )
 
                     event?.onSuccess { res ->
-                        if (lastEvent != res) {
-                            if (res.name == "gomode") {
-                                deleteEventServerUseCase.execute(
-                                    deleteEventDTO = DeleteEventDTO(
-                                        dvid = loadReq.dvid,
-                                        tkn = loadReq.tkn,
-                                        typedv = loadReq.typedv,
-                                        num = loadReq.num,
-                                        com = "del",
-                                        id = res.id
-                                    )
-                                ).onSuccess {
-                                    if (!goModeOff) {
-                                        preferences.edit().putBoolean(RELE_MODE_GO, true).apply()
-                                        goModeOff = true
-                                    } else {
-                                        goModeOff = false
-                                        preferences.edit().putBoolean(RELE_MODE_GO, false).apply()
-                                    }
-                                }
-                            } else {
-                                saveEventUseCase.execute(res)
-                                insertLastEventServerInDBUseCase.execute(
-                                    LastEventsServerEntity(
-                                        id = res.id,
-                                        timeev = res.timeev,
-                                        rstate = res.rstate,
-                                        value = res.value,
-                                        name = res.name
-                                    )
-                                )
-                                delay(10)
-                                showNotification("Внимание, новое событие", res.toString())
-                                preferences
-                                    .edit()
-                                    .putInt("EVENT_ID", res.id)
-                                    .putString("EVENT_VALUE", res.value)
-                                    .putString("EVENT_NAME", res.name)
-                                    .putString("EVENT_RSTATE", res.rstate)
-                                    .putString("EVENT_TIMEEV", res.timeev)
-                                    .apply()
-                            }
+//                        if (lastEvent != res) {
+//                            if (res.name == "gomode") {
+//                                deleteEventServerUseCase.execute(
+//                                    deleteEventDTO = DeleteEventDTO(
+//                                        dvid = loadReq.dvid,
+//                                        tkn = loadReq.tkn,
+//                                        typedv = loadReq.typedv,
+//                                        num = loadReq.num,
+//                                        com = "del",
+//                                        id = res.id
+//                                    )
+//                                ).onSuccess {
+//                                    if (!goModeOff) {
+//                                        preferences.edit().putBoolean(RELE_MODE_GO, true).apply()
+//                                        goModeOff = true
+//                                    } else {
+//                                        goModeOff = false
+//                                        preferences.edit().putBoolean(RELE_MODE_GO, false).apply()
+//                                    }
+//
+//                                    //////fixit
+//
+//                                }
+//                            } else {
+//                        if (res.name != "gomode") {
+                        saveEventUseCase.execute(res)
+                        insertLastEventServerInDBUseCase.execute(
+                            LastEventsServerEntity(
+                                id = res.id,
+                                timeev = res.timeev,
+                                rstate = res.rstate,
+                                value = res.value,
+                                name = res.name
+                            )
+                        )
+                        delay(10)
+                        showNotification("Внимание, новое событие", res.toString())
+                        preferences
+                            .edit()
+                            .putInt("EVENT_ID", res.id)
+                            .putString("EVENT_VALUE", res.value)
+                            .putString("EVENT_NAME", res.name)
+                            .putString("EVENT_RSTATE", res.rstate)
+                            .putString("EVENT_TIMEEV", res.timeev)
+                            .apply()
 
+                        if (res.name != "gomode") {
+
+                            deleteEventServerUseCase.execute(
+                                deleteEventDTO = DeleteEventDTO(
+                                    dvid = loadReq.dvid,
+                                    tkn = loadReq.tkn,
+                                    typedv = loadReq.typedv,
+                                    num = loadReq.num,
+                                    com = "del",
+                                    id = res.id
+                                )
+                            ).onSuccess { println("Событие удалено") }
                         }
+
+//                        }
                     }?.onFailure { error ->
                         error.printStackTrace()
                     }
