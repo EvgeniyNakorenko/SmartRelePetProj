@@ -15,8 +15,12 @@ class FetchDataUseCase {
     suspend fun execute(requestDataDTO: RequestDataDTO): Result<UiState> {
         return withContext(Dispatchers.IO) {
             try {
-                val apiService = RetrofitClient.getClient("http://82.97.247.240:3000/").create(
-                    ApiService::class.java)
+//                val apiService = RetrofitClient.getClient("http://82.97.247.240:3000/").create(
+//                    ApiService::class.java)
+
+                val apiService = RetrofitClient.getClient("http://82.97.247.240:3000/")
+                    .create(ApiService::class.java)
+
                 val call = apiService.sendData(requestDataDTO)
                 val response = call.execute()
 

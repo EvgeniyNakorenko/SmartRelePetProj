@@ -1,6 +1,8 @@
 package com.example.detectcontroller.domain.server
 
 import co.yml.charts.common.extensions.isNotNull
+import com.example.detectcontroller.data.remote.ApiService
+import com.example.detectcontroller.data.remote.RetrofitClient
 import com.example.detectcontroller.data.remote.remDTO.RequestDataDTO
 import com.example.detectcontroller.data.remote.remDTO.StatusEventServerDTO
 import kotlinx.coroutines.Dispatchers
@@ -20,44 +22,32 @@ class CheckServerEventUseCase {
     suspend fun execute(requestDataDTO: RequestDataDTO): Result<StatusEventServerDTO> {
         return withContext(Dispatchers.IO) {
             try {
-                val httpClient = OkHttpClient.Builder()
-                    .connectTimeout(30, TimeUnit.SECONDS)
-                    .writeTimeout(30, TimeUnit.SECONDS)
-                    .readTimeout(30, TimeUnit.SECONDS)
-                    .build()
+                val apiService = RetrofitClient.getClient("http://82.97.247.240:3000/")
+                    .create(ApiService::class.java)
 
-                // Сериализация объекта в JSON
-                val jsonData = Json.encodeToString(requestDataDTO.copy(com = "rev"))
+                val response = apiService.checkEvent(requestDataDTO.copy(com = "rev"))
 
-                val requestBody = jsonData.toRequestBody("application/json".toMediaType())
-                val request = Request.Builder()
-                    .url("http://82.97.247.240:3000/qsapi/event")
-                    .post(requestBody)
-                    .build()
+                if (response.isSuccessful) {
+                    val jsonResponse = response.body()?.string() ?: ""
+                    val jsonObject = JSONObject(jsonResponse)
 
-                httpClient.newCall(request).execute().use { response ->
-                    if (response.isSuccessful) {
-                        val jsonResponse = response.body?.string() ?: ""
-                        val jsonObject = JSONObject(jsonResponse)
-
-                        Result.success(
-                            StatusEventServerDTO(
-                                id = jsonObject.getInt("id"),
-                                timeev = jsonObject.getString("timeev"),
-                                rstate = jsonObject.getString("rstate"),
-                                value = when {
-                                    jsonObject.has("irl") -> "irl" + jsonObject.getString("irl")
-                                    jsonObject.has("pwr") -> "pwr" + jsonObject.getString("pwr")
-                                    jsonObject.has("url") -> "url" + jsonObject.getString("url")
-                                    jsonObject.has("rmode") -> "rmode" + jsonObject.getString("rmode")
-                                    else -> ""
-                                },
-                                name = jsonObject.getString("name"),
-                            )
+                    Result.success(
+                        StatusEventServerDTO(
+                            id = jsonObject.getInt("id"),
+                            timeev = jsonObject.getString("timeev"),
+                            rstate = jsonObject.getString("rstate"),
+                            value = when {
+                                jsonObject.has("irl") -> "irl" + jsonObject.getString("irl")
+                                jsonObject.has("pwr") -> "pwr" + jsonObject.getString("pwr")
+                                jsonObject.has("url") -> "url" + jsonObject.getString("url")
+                                jsonObject.has("rmode") -> "rmode" + jsonObject.getString("rmode")
+                                else -> ""
+                            },
+                            name = jsonObject.getString("name"),
                         )
-                    } else {
-                        Result.failure(Exception("Ошибка: ${response.code} - ${response.message}"))
-                    }
+                    )
+                } else {
+                    Result.failure(Exception("Ошибка: ${response.code()} - ${response.message()}"))
                 }
             } catch (e: Exception) {
                 Result.failure(e)
@@ -77,13 +67,8 @@ class CheckServerEventUseCase {
 //                    .readTimeout(30, TimeUnit.SECONDS)
 //                    .build()
 //
-//                val jsonData = JSONObject().apply {
-//                    put("dvid", requestDataDTO.dvid)
-//                    put("tkn", requestDataDTO.tkn)
-//                    put("com", "rev") // Команда для чтения событий устройства
-//                    put("typedv", requestDataDTO.typedv)
-//                    put("num", requestDataDTO.num)
-//                }.toString()
+//                // Сериализация объекта в JSON
+//                val jsonData = Json.encodeToString(requestDataDTO.copy(com = "rev"))
 //
 //                val requestBody = jsonData.toRequestBody("application/json".toMediaType())
 //                val request = Request.Builder()
@@ -91,34 +76,29 @@ class CheckServerEventUseCase {
 //                    .post(requestBody)
 //                    .build()
 //
-//                val response = httpClient.newCall(request).execute()
+//                httpClient.newCall(request).execute().use { response ->
+//                    if (response.isSuccessful) {
+//                        val jsonResponse = response.body?.string() ?: ""
+//                        val jsonObject = JSONObject(jsonResponse)
 //
-//                if (response.isSuccessful) {
-//                    val jsonResponse = response.body()?.string() ?: ""
-//                    val jsonObject = JSONObject(jsonResponse)
-//
-//                    Result.success(
-//                        StatusEventServerDTO(
-//                            id = jsonObject.getInt("id"),
-//                            timeev = jsonObject.getString("timeev"),
-//                            rstate = jsonObject.getString("rstate"),
-//                            value = when {
-//                                jsonObject.has("irl") -> "irl" + jsonObject.getString("irl")
-//                                    .toString()
-//
-//                                jsonObject.has("pwr") -> "pwr" + jsonObject.getString("pwr")
-//                                    .toString()
-//
-//                                jsonObject.has("url") -> "url" + jsonObject.getString("url")
-//                                    .toString()
-//
-//                                else -> ""
-//                            },
-//                            name = jsonObject.getString("name"),
+//                        Result.success(
+//                            StatusEventServerDTO(
+//                                id = jsonObject.getInt("id"),
+//                                timeev = jsonObject.getString("timeev"),
+//                                rstate = jsonObject.getString("rstate"),
+//                                value = when {
+//                                    jsonObject.has("irl") -> "irl" + jsonObject.getString("irl")
+//                                    jsonObject.has("pwr") -> "pwr" + jsonObject.getString("pwr")
+//                                    jsonObject.has("url") -> "url" + jsonObject.getString("url")
+//                                    jsonObject.has("rmode") -> "rmode" + jsonObject.getString("rmode")
+//                                    else -> ""
+//                                },
+//                                name = jsonObject.getString("name"),
+//                            )
 //                        )
-//                    )
-//                } else {
-//                    Result.failure(Exception("Ошибка: ${response.code()}"))
+//                    } else {
+//                        Result.failure(Exception("Ошибка: ${response.code} - ${response.message}"))
+//                    }
 //                }
 //            } catch (e: Exception) {
 //                Result.failure(e)

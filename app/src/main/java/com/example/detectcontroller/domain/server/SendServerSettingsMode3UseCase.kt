@@ -1,5 +1,7 @@
 package com.example.detectcontroller.domain.server
 
+import com.example.detectcontroller.data.remote.ApiService
+import com.example.detectcontroller.data.remote.RetrofitClient
 import com.example.detectcontroller.data.remote.remDTO.SendServerSettingsMode3DTO
 import com.example.detectcontroller.data.remote.remDTO.StatusRegServer
 import kotlinx.coroutines.Dispatchers
@@ -11,39 +13,30 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
+import retrofit2.HttpException
 import java.util.concurrent.TimeUnit
 
 class SendServerSettingsMode3UseCase {
+
     suspend fun execute(sendServerSettingsMode3DTO: SendServerSettingsMode3DTO): Result<StatusRegServer> {
         return withContext(Dispatchers.IO) {
             try {
-                val httpClient = OkHttpClient.Builder()
-                    .connectTimeout(30, TimeUnit.SECONDS)
-                    .writeTimeout(30, TimeUnit.SECONDS)
-                    .readTimeout(30, TimeUnit.SECONDS)
-                    .build()
+                val apiService = RetrofitClient.getClient("http://82.97.247.240:3000/")
+                    .create(ApiService::class.java)
 
-                val jsonData = Json.encodeToString(sendServerSettingsMode3DTO)
+                val response = apiService.sendSettingsMode3(sendServerSettingsMode3DTO)
 
-                val requestBody = jsonData.toRequestBody("application/json".toMediaType())
-                val request = Request.Builder()
-                    .url("http://82.97.247.240:3000/qsapi/var")
-                    .post(requestBody)
-                    .build()
+                if (response.isSuccessful) {
+                    val jsonResponse = response.body()?.string() ?: ""
+                    val jsonObject = JSONObject(jsonResponse)
 
-                httpClient.newCall(request).execute().use { response ->
-                    if (response.isSuccessful) {
-                        val jsonResponse = response.body?.string() ?: ""
-                        val jsonObject = JSONObject(jsonResponse)
-
-                        Result.success(
-                            StatusRegServer(
-                                status = jsonObject.getString("status").toInt()
-                            )
+                    Result.success(
+                        StatusRegServer(
+                            status = jsonObject.getString("status").toInt()
                         )
-                    } else {
-                        Result.failure(Exception("Ошибка: ${response.code} - ${response.message}"))
-                    }
+                    )
+                } else {
+                    Result.failure(HttpException(response))
                 }
             } catch (e: Exception) {
                 Result.failure(e)
@@ -51,3 +44,42 @@ class SendServerSettingsMode3UseCase {
         }
     }
 }
+//
+//class SendServerSettingsMode3UseCase {
+//    suspend fun execute(sendServerSettingsMode3DTO: SendServerSettingsMode3DTO): Result<StatusRegServer> {
+//        return withContext(Dispatchers.IO) {
+//            try {
+//                val httpClient = OkHttpClient.Builder()
+//                    .connectTimeout(30, TimeUnit.SECONDS)
+//                    .writeTimeout(30, TimeUnit.SECONDS)
+//                    .readTimeout(30, TimeUnit.SECONDS)
+//                    .build()
+//
+//                val jsonData = Json.encodeToString(sendServerSettingsMode3DTO)
+//
+//                val requestBody = jsonData.toRequestBody("application/json".toMediaType())
+//                val request = Request.Builder()
+//                    .url("http://82.97.247.240:3000/qsapi/var")
+//                    .post(requestBody)
+//                    .build()
+//
+//                httpClient.newCall(request).execute().use { response ->
+//                    if (response.isSuccessful) {
+//                        val jsonResponse = response.body?.string() ?: ""
+//                        val jsonObject = JSONObject(jsonResponse)
+//
+//                        Result.success(
+//                            StatusRegServer(
+//                                status = jsonObject.getString("status").toInt()
+//                            )
+//                        )
+//                    } else {
+//                        Result.failure(Exception("Ошибка: ${response.code} - ${response.message}"))
+//                    }
+//                }
+//            } catch (e: Exception) {
+//                Result.failure(e)
+//            }
+//        }
+//    }
+//}

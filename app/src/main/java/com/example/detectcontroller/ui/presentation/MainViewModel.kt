@@ -37,7 +37,6 @@ import com.example.detectcontroller.domain.db.InsertRegServerInDBUseCase
 import com.example.detectcontroller.domain.db.LoadDataFromDBUseCase
 import com.example.detectcontroller.domain.db.LoadEventServerFromDBUseCase
 import com.example.detectcontroller.domain.db.LoadLastEventServerFromDBUseCase
-import com.example.detectcontroller.domain.registration.RegGetDataSMSUseCase
 import com.example.detectcontroller.domain.registration.RegGetDataWIFIUseCase
 import com.example.detectcontroller.domain.registration.RegSendDataWIFIUseCase
 import com.example.detectcontroller.domain.server.DeleteEventServerUseCase
@@ -127,7 +126,6 @@ class MainViewModel(
     @SuppressLint("StaticFieldLeak")
     private val contextIn = context
     private val regGetDataWIFIUseCase = RegGetDataWIFIUseCase()
-    private val regGetDataSMSUseCase = RegGetDataSMSUseCase()
     private val regSendDataWIFIUseCase = RegSendDataWIFIUseCase()
     private val deleteEventServerUseCase = DeleteEventServerUseCase()
     private val sendSettingsServerUseCase = SendSettingsServerUseCase()
