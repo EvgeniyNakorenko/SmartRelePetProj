@@ -18,6 +18,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.detectcontroller.ui.presentation.MainViewModel
+import com.example.detectcontroller.ui.presentation.utils.Screen
 
 @Composable
 fun MainScreen(mainViewModel: MainViewModel,
@@ -38,15 +39,18 @@ fun MainScreen(mainViewModel: MainViewModel,
                 enterTransition = { slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left) },
                 exitTransition = { slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Left) }
             ) { HomeScreen(mainViewModel,preferences) }
-            composable(Screen.New.route,
+            composable(
+                Screen.New.route,
                 enterTransition = { slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left) },
                 exitTransition = { slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Left) }
             ) { New(mainViewModel) }
-            composable(Screen.Devices.route,
+            composable(
+                Screen.Devices.route,
                 enterTransition = { slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left) },
                 exitTransition = { slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Left) }
             ) { Devices() }
-            composable(Screen.Log.route,
+            composable(
+                Screen.Log.route,
                 enterTransition = { slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left) },
                 exitTransition = { slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Left) }
             ){ Log(mainViewModel, preferences)}
@@ -70,9 +74,7 @@ fun BottomNavigationBar(navController: NavHostController) {
                         popUpTo(navController.graph.findStartDestination().id) {
                             saveState = true
                         }
-                        // Предотвращение дублирования в back stack
                         launchSingleTop = true
-                        // Восстановление состояния при повторном выборе
                         restoreState = true
                     }
                 }

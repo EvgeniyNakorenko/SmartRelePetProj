@@ -14,45 +14,12 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
-import com.example.detectcontroller.R
 import com.example.detectcontroller.data.local.AppDatabase
 import com.example.detectcontroller.data.local.locDTO.RegServerEntity
 import com.example.detectcontroller.data.remote.remDTO.RequestDataDTO
-import com.example.detectcontroller.data.remote.remDTO.StatusEventServerDTO
 import com.example.detectcontroller.domain.db.DeleteLastEventServerByIdFromDBUseCase
 import com.example.detectcontroller.domain.db.GetAllRegServerFromDBUseCase
 import com.example.detectcontroller.domain.db.GetOneLastEventServerFromDBUseCase
@@ -62,15 +29,7 @@ import com.example.detectcontroller.domain.db.LoadEventServerFromDBUseCase
 import com.example.detectcontroller.domain.db.LoadLastEventServerFromDBUseCase
 import com.example.detectcontroller.service.ForegroundService
 import com.example.detectcontroller.service.ForegroundService.Companion.TAG
-import com.example.detectcontroller.ui.presentation.MainViewModel.Companion.I_TEXT_FIELD_VALUE1
-import com.example.detectcontroller.ui.presentation.MainViewModel.Companion.I_TEXT_FIELD_VALUE2
-import com.example.detectcontroller.ui.presentation.MainViewModel.Companion.P_TEXT_FIELD_VALUE1
-import com.example.detectcontroller.ui.presentation.MainViewModel.Companion.RELE_MODE_GO
-import com.example.detectcontroller.ui.presentation.MainViewModel.Companion.TAR_TEXT_FIELD_VALUE1
-import com.example.detectcontroller.ui.presentation.MainViewModel.Companion.TAR_TEXT_FIELD_VALUE2
-import com.example.detectcontroller.ui.presentation.MainViewModel.Companion.T_TEXT_FIELD_VALUE1
-import com.example.detectcontroller.ui.presentation.MainViewModel.Companion.U_TEXT_FIELD_VALUE1
-import com.example.detectcontroller.ui.presentation.MainViewModel.Companion.U_TEXT_FIELD_VALUE2
+import com.example.detectcontroller.ui.presentation.composeFunc.DialogState.INVISIBLE
 import com.example.detectcontroller.ui.presentation.nav.MainScreen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -185,18 +144,20 @@ class MainActivity : ComponentActivity() {
                 withContext(Dispatchers.IO) {
 
                     if (regData != null) {
-                        viewModel.createEvent(
-                            ScreenEvent.GetServerSettings(
-                                RequestDataDTO(
-                                    regData.dvid,
-                                    regData.tkn,
-                                    regData.typedv,
-                                    regData.num,
-                                    com = "rv"
-
+                        if (viewModel.screenState.value.dialogState == INVISIBLE){
+                            viewModel.createEvent(
+                                ScreenEvent.GetServerSettings(
+                                    RequestDataDTO(
+                                        regData.dvid,
+                                        regData.tkn,
+                                        regData.typedv,
+                                        regData.num,
+                                        com = "rv"
+                                    )
                                 )
                             )
-                        )
+                        }
+
                     }
                 }
                 delay(60_000)

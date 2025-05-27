@@ -85,19 +85,19 @@ class GetServerSettingsUseCase {
 
                             5 -> GetSettingsDTOrmode5(
                                 rmode = jsonObject.getString("rmode").toInt(),
-                                tClOn = jsonObject.getString("rmode").toString(),
-                                tClOff = jsonObject.getString("rmode").toString(),
-                                prton = jsonObject.getString("rmode").toInt(),
-                                upm = jsonObject.getString("rmode").toInt(),
-                                ulh = jsonObject.getString("rmode").toInt(),
-                                ull = jsonObject.getString("rmode").toInt(),
-                                ipm = jsonObject.getString("rmode").toInt(),
-                                ilh = jsonObject.getString("rmode").toFloat(),
-                                ill = jsonObject.getString("rmode").toFloat(),
-                                ppm = jsonObject.getString("rmode").toInt(),
-                                plh = jsonObject.getString("rmode").toInt(),
-                                tpm = jsonObject.getString("rmode").toInt(),
-                                tlh = jsonObject.getString("rmode").toInt(),
+                                tClOn = jsonObject.getString("tClOn").toString(),
+                                tClOff = jsonObject.getString("tClOff").toString(),
+                                prton = jsonObject.getString("prton").toInt(),
+                                upm = jsonObject.getString("upm").toInt(),
+                                ulh = jsonObject.getString("ulh").toInt(),
+                                ull = jsonObject.getString("ull").toInt(),
+                                ipm = jsonObject.getString("ipm").toInt(),
+                                ilh = jsonObject.getString("ilh").toFloat(),
+                                ill = jsonObject.getString("ill").toFloat(),
+                                ppm = jsonObject.getString("ppm").toInt(),
+                                plh = jsonObject.getString("plh").toInt(),
+                                tpm = jsonObject.getString("tpm").toInt(),
+                                tlh = jsonObject.getString("tlh").toInt(),
                             )
 
                             else -> GetSettingsDTOrmode1(

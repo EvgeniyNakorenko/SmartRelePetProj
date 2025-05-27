@@ -1,7 +1,6 @@
-package com.example.detectcontroller.ui.presentation
+package com.example.detectcontroller.ui.presentation.utils
 
 import androidx.compose.ui.graphics.Color
-import com.example.detectcontroller.data.remote.remDTO.StatusEventServerDTO
 
 data class Item(
     val text: String,

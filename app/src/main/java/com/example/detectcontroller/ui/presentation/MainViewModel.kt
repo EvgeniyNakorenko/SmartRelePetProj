@@ -47,15 +47,15 @@ import com.example.detectcontroller.domain.server.SendServerSettingsMode3UseCase
 import com.example.detectcontroller.domain.server.SendServerSettingsMode4UseCase
 import com.example.detectcontroller.domain.server.SendServerSettingsMode5UseCase
 import com.example.detectcontroller.domain.server.SendSettingsServerUseCase
-import com.example.detectcontroller.ui.presentation.DialogState.INVISIBLE
+import com.example.detectcontroller.ui.presentation.composeFunc.DialogState
+import com.example.detectcontroller.ui.presentation.composeFunc.DialogState.INVISIBLE
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.last
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlin.coroutines.cancellation.CancellationException
 
@@ -88,7 +88,7 @@ sealed class ScreenEvent {
     data class OpenSettingsU(val value: String) : ScreenEvent()
     data class OpenSettingsP(val value: String) : ScreenEvent()
     data class OpenSettingsT(val value: String) : ScreenEvent()
-    data class OpenSettingsRel(val value: String) : ScreenEvent()
+    data class SaveShPrefSettingsRel(val value: String) : ScreenEvent()
     data class OpenScreenRel(val value: String) : ScreenEvent()
     data class LoadEventServerFromDB(val value: String) : ScreenEvent()
     data class LoadLastEventServerFromDB(val value: String) : ScreenEvent()
@@ -284,51 +284,75 @@ class MainViewModel(
     val releMode3TimeOn: SnapshotStateList<String> = _releMode3TimeOn
 
     fun set_releMode3TimeOn(time: String) {
-//    fun set_releMode3TimeOn(hours: String, minutes: String, seconds: String) {
-        val newTime = time
         if (_releMode3TimeOn.isNotEmpty()) {
-            _releMode3TimeOn[_releMode3TimeOn.lastIndex] = newTime
+            _releMode3TimeOn[_releMode3TimeOn.lastIndex] = time
         } else {
-            _releMode3TimeOn.add(newTime)
+            _releMode3TimeOn.add(time)
         }
-        preferences.edit().putString(RELE_MODE3_TIME_ON, newTime).apply()
+        preferences.edit().putString(RELE_MODE3_TIME_ON, time).apply()
     }
 
     //rele mode 4
 
-//    private val _releMode4Time = MutableStateFlow(Pair("00:00:00", "00:00:00"))
-//    val releMode4Time: StateFlow<Pair<String, String>> = _releMode4Time.asStateFlow()
 
-
-    private val _releMode4Time = mutableStateListOf<Pair<String, String>>(
-        Pair(
-            first = preferences.getString(RELE_MODE4_TIME_ON, "00:00:00") ?: "00:00:00",
-            second = preferences.getString(RELE_MODE4_TIME_OFF, "00:00:00") ?: "00:00:00"
+    private val _releMode4TimeOn =
+        mutableStateListOf<String>(
+            preferences.getString(RELE_MODE4_TIME_ON, "00:00:00") ?: "00:00:00"
         )
-    )
-    val releMode4Time: SnapshotStateList<Pair<String, String>> = _releMode4Time
-    private fun getTimeOrDefaultMode4(): Pair<String, String> {
-        val timeStringOn = preferences.getString(RELE_MODE4_TIME_ON, "00:00:00") ?: "00:00:00"
-        val timeStringOff = preferences.getString(RELE_MODE4_TIME_OFF, "00:00:00") ?: "00:00:00"
-        return Pair(timeStringOn, timeStringOff)
+    val releMode4TimeOn: SnapshotStateList<String> = _releMode4TimeOn
+    fun set_releMode4TimeOn(time: String) {
+        if (_releMode4TimeOn.isNotEmpty()) {
+            _releMode4TimeOn[_releMode4TimeOn.lastIndex] = time
+        } else {
+            _releMode4TimeOn.add(time)
+        }
+        preferences.edit().putString(RELE_MODE4_TIME_ON, time).apply()
     }
 
-    fun set_releMode4Time(tRTCOn: String, tRTCOff: String) {
-        _releMode4Time.add(Pair(tRTCOn, tRTCOff))
+    private val _releMode4TimeOff =
+        mutableStateListOf<String>(
+            preferences.getString(RELE_MODE4_TIME_OFF, "23:59:59") ?: "23:59:59"
+        )
+    val releMode4TimeOff: SnapshotStateList<String> = _releMode4TimeOff
+    fun set_releMode4TimeOff(time: String) {
+        if (_releMode4TimeOff.isNotEmpty()) {
+            _releMode4TimeOff[_releMode4TimeOff.lastIndex] = time
+        } else {
+            _releMode4TimeOff.add(time)
+        }
+        preferences.edit().putString(RELE_MODE4_TIME_OFF, time).apply()
     }
+
 
     //rele mode 5
-    private val _releMode5Time = mutableStateListOf<Pair<String, String>>(getTimeOrDefaultMode5())
-    val releMode5Time: SnapshotStateList<Pair<String, String>> = _releMode5Time
-    fun getTimeOrDefaultMode5(): Pair<String, String> {
-        val timeStringOn = preferences.getString(RELE_MODE5_TIME_ON, "00:00:00") ?: "00:00:00"
-        val timeStringOff = preferences.getString(RELE_MODE5_TIME_OFF, "00:00:00") ?: "00:00:00"
 
-        return Pair(timeStringOn, timeStringOff)
+
+    private val _releMode5TimeOn =
+        mutableStateListOf<String>(
+            preferences.getString(RELE_MODE5_TIME_ON, "00:00:00") ?: "00:00:00"
+        )
+    val releMode5TimeOn: SnapshotStateList<String> = _releMode5TimeOn
+    fun set_releMode5TimeOn(time: String) {
+        if (_releMode5TimeOn.isNotEmpty()) {
+            _releMode5TimeOn[_releMode5TimeOn.lastIndex] = time
+        } else {
+            _releMode5TimeOn.add(time)
+        }
+        preferences.edit().putString(RELE_MODE5_TIME_ON, time).apply()
     }
 
-    fun set_releMode5Time(tClOn: String, tClOff: String) {
-        _releMode5Time.add(Pair(tClOn, tClOff))
+    private val _releMode5TimeOff =
+        mutableStateListOf<String>(
+            preferences.getString(RELE_MODE5_TIME_OFF, "23:59:59") ?: "23:59:59"
+        )
+    val releMode5TimeOff: SnapshotStateList<String> = _releMode5TimeOff
+    fun set_releMode5TimeOff(time: String) {
+        if (_releMode5TimeOff.isNotEmpty()) {
+            _releMode5TimeOff[_releMode5TimeOff.lastIndex] = time
+        } else {
+            _releMode5TimeOff.add(time)
+        }
+        preferences.edit().putString(RELE_MODE5_TIME_OFF, time).apply()
     }
 
     //rele mode go
@@ -345,10 +369,20 @@ class MainViewModel(
     private val _buttonGoVisib = MutableStateFlow(true)
     val buttonGoVisib: StateFlow<Boolean> = _buttonGoVisib
     fun set_buttonGoVisib(value: Boolean) {
-
         Thread.sleep(100)
         _buttonGoVisib.value = value
     }
+
+    //releStt
+
+    //    var releStt : Boolean = false
+    private val _releStt = MutableStateFlow(true)
+    val releStt: StateFlow<Boolean> = _releStt
+    fun set_releStt(value: Boolean) {
+        Thread.sleep(100)
+        _releStt.value = value
+    }
+
 
     //I
     private val _textFieldValue1I =
@@ -587,7 +621,7 @@ class MainViewModel(
             is ScreenEvent.OpenSettingsT -> updateSettingsT()
             is ScreenEvent.OpenSettingsTAR -> updateSettingsTAR()
             is ScreenEvent.OpenSettingsCOU -> updateSettingsCOU()
-            is ScreenEvent.OpenSettingsRel -> openSettingsRel()
+            is ScreenEvent.SaveShPrefSettingsRel -> saveShPrefSettingsRel()
             is ScreenEvent.RegSMS -> {
                 val regServerEntity = RegServerEntity(
                     dvid = regDataWIFI.last().dvid,
@@ -623,28 +657,31 @@ class MainViewModel(
             is ScreenEvent.SendServerSettingsMode3 -> {
                 sendServerSettingsMode3(event.value)
                 _releModeGO.value = false
+                _releStt.value = false
             }
 
             is ScreenEvent.SendServerSettingsMode4 -> {
                 sendServerSettingsMode4(event.value)
                 _releModeGO.value = false
+                _releStt.value = false
             }
 
             is ScreenEvent.SendServerSettingsMode5 -> {
                 sendServerSettingsMode5(event.value)
                 _releModeGO.value = false
+                _releStt.value = false
             }
 
             is ScreenEvent.SendServerSettingsMode012 -> {
                 sendServerSettingsMode012(event.value)
                 _releModeGO.value = false
+                _releStt.value = false
             }
 
             is ScreenEvent.GetServerSettings -> getSettingsServer(event.value)
 
             is ScreenEvent.SendServerGoMode -> {
                 sendServerGOMode()
-
 //                set_buttonGoVisib(res)
             }
         }
@@ -674,17 +711,18 @@ class MainViewModel(
             showToast("gomode не отправлен на сервер")
 //            set_buttonGoVisib(true)
         }
-
     }
 
-    private fun openSettingsRel() {
+    private fun saveShPrefSettingsRel() {
         preferences
             .edit()
             .putString(SETREL_TEXT_FIELD_VALUE1, textFieldValue1SETREL.last())
             .putString(RELE_MODE_VALUE, releModeValue.last())
             .putString(RELE_MODE3_TIME_ON, _releMode3TimeOn.last().toString())
-            .putString(RELE_MODE4_TIME_ON, _releMode4Time.last().toString())
-            .putString(RELE_MODE4_TIME_OFF, _releMode4Time.last().toString())
+            .putString(RELE_MODE4_TIME_ON, _releMode4TimeOn.last().toString())
+            .putString(RELE_MODE4_TIME_OFF, _releMode4TimeOff.last().toString())
+            .putString(RELE_MODE5_TIME_ON, _releMode5TimeOn.last().toString())
+            .putString(RELE_MODE5_TIME_OFF, _releMode5TimeOff.last().toString())
             .apply()
     }
 
@@ -741,7 +779,8 @@ class MainViewModel(
                         is GetSettingsDTOrmode4 -> {
                             set_releModeValue(result.rmode)
 //                            set_releMode4Time(result.tRTCOn, result.tRTCOff)
-                            _releMode4Time.add(Pair(result.tRTCOn, result.tRTCOff))
+                            _releMode4TimeOn.add(result.tRTCOn)
+                            _releMode4TimeOff.add(result.tRTCOff)
                             setCheckboxValue1U(result.upm == 1)
                             setTextFieldValue1U(result.ulh.toFloat())
                             setTextFieldValue2U(result.ull.toFloat())
@@ -756,7 +795,8 @@ class MainViewModel(
 
                         is GetSettingsDTOrmode5 -> {
                             set_releModeValue(result.rmode)
-                            set_releMode5Time(result.tClOn, result.tClOff)
+                            _releMode5TimeOn.add(result.tClOn)
+                            _releMode5TimeOff.add(result.tClOff)
                             setCheckboxValue1U(result.upm == 1)
                             setTextFieldValue1U(result.ulh.toFloat())
                             setTextFieldValue2U(result.ull.toFloat())
@@ -951,7 +991,6 @@ class MainViewModel(
 
                 val del = deleteEventServerUseCase.execute(dto)
 
-//                showToast("Ожидание ответа от сервера")
                 del.onSuccess { res ->
                     if (res.success) {
 //                        showToast("Событие (id=$reqDVID) сохранено в журнал и удалено с сервера")
@@ -961,12 +1000,18 @@ class MainViewModel(
                                 _releModeGO.value = false
                                 preferences.edit().putBoolean(RELE_MODE_GO, false).apply()
                                 _buttonGoVisib.value = true
+                                _releStt.value = false
+                                _uiState.value = _uiState.value.copy(stt = "stt: 0")
+
                             }
 
                             "1" -> {
+
                                 _releModeGO.value = true
                                 preferences.edit().putBoolean(RELE_MODE_GO, true).apply()
                                 _buttonGoVisib.value = true
+                                _releStt.value = true
+                                _uiState.value = _uiState.value.copy(stt = "stt: 1")
                             }
 
                             "2" -> {
@@ -981,6 +1026,8 @@ class MainViewModel(
                                 preferences.edit().putBoolean(RELE_MODE_GO, false).apply()
                                 _buttonGoVisib.value = true
 
+                                _releStt.value = false
+                                _uiState.value = _uiState.value.copy(stt = "stt: 0")
                             }
 
                             "4" -> {
@@ -994,12 +1041,15 @@ class MainViewModel(
                                 _releModeGO.value = false
                                 preferences.edit().putBoolean(RELE_MODE_GO, false).apply()
                                 _buttonGoVisib.value = true
+
                             }
 
                             "6" -> {
                                 _releModeGO.value = true
                                 preferences.edit().putBoolean(RELE_MODE_GO, true).apply()
                                 _buttonGoVisib.value = true
+                                _releStt.value = true
+                                _uiState.value = _uiState.value.copy(stt = "stt: 1")
                             }
                         }
 
@@ -1091,26 +1141,19 @@ class MainViewModel(
         viewModelScope.launch {
             while (true) {
                 ////////////////
-
+//                0 -> res = "Выключено"
+//                1 -> res = "Тумблер"
+//                2 -> res = "Кнопка"
+//                3 -> res = "На время"
+//                4 -> res = "Таймер"
+//                5 -> res = "Цикл"
                 val uiStateFromDb = loadDataFromDBUseCase.execute()
                 _uiStateList.value = uiStateFromDb
                 if (uiStateFromDb.isNotEmpty()) {
                     _uiState.value = uiStateFromDb.first()
-
-//                    if (preferences.getBoolean(RELE_MODE_GO, false) != gomodeVar) {
-//                        set_buttonGoVisib(true)
-//                        gomodeVar = !gomodeVar
-//                    }
-//
-//                    when(uiStateFromDb.first().stt){
-//                        "stt: 0" -> _releModeGO.value = false
-//                        "stt: 1" -> _releModeGO.value = true
-//                        "stt: 2" -> _releModeGO.value = true
-//                        "stt: 3" -> _releModeGO.value = false
-//                        "stt: 4" -> _releModeGO.value = false
-//                        "stt: 5" -> _releModeGO.value = false
-//                        "stt: 6" -> _releModeGO.value = true
-//                    }
+                    if (_releModeValue.last() != "Тумблер" && _releModeValue.last() != "Кнопка" && _releModeValue.last() != "На время" ) {
+                        _releStt.value = _uiState.value.stt == "stt: 1"
+                    }
 
                 }
                 delay(5000)

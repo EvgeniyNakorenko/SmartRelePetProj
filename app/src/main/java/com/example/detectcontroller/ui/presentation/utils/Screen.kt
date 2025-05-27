@@ -1,4 +1,4 @@
-package com.example.detectcontroller.ui.presentation.nav
+package com.example.detectcontroller.ui.presentation.utils
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add

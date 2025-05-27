@@ -1,4 +1,4 @@
-package com.example.detectcontroller.ui.presentation
+package com.example.detectcontroller.ui.presentation.composeFunc
 
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
@@ -43,6 +43,7 @@ import co.yml.charts.ui.linechart.model.SelectionHighlightPoint
 import co.yml.charts.ui.linechart.model.SelectionHighlightPopUp
 import co.yml.charts.ui.linechart.model.ShadowUnderLine
 import com.example.detectcontroller.data.remote.remDTO.UiState
+import com.example.detectcontroller.ui.presentation.MainViewModel
 
 class LineChartScreen {
 

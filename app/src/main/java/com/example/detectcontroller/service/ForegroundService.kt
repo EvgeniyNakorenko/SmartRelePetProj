@@ -171,40 +171,8 @@ class ForegroundService() : Service() {
                     val event = loadReq?.let { checkServerEventUseCase.execute(it) }
                     delay(10)
 
-//                    var lastEvent: StatusEventServerDTO? =
-//                        getOneLastEventServerFromDBUseCase.execute(
-//                            preferences.getInt(
-//                                "EVENT_ID",
-//                                0
-//                            )
-//                        )
-
                     event?.onSuccess { res ->
-//                        if (lastEvent != res) {
-//                            if (res.name == "gomode") {
-//                                deleteEventServerUseCase.execute(
-//                                    deleteEventDTO = DeleteEventDTO(
-//                                        dvid = loadReq.dvid,
-//                                        tkn = loadReq.tkn,
-//                                        typedv = loadReq.typedv,
-//                                        num = loadReq.num,
-//                                        com = "del",
-//                                        id = res.id
-//                                    )
-//                                ).onSuccess {
-//                                    if (!goModeOff) {
-//                                        preferences.edit().putBoolean(RELE_MODE_GO, true).apply()
-//                                        goModeOff = true
-//                                    } else {
-//                                        goModeOff = false
-//                                        preferences.edit().putBoolean(RELE_MODE_GO, false).apply()
-//                                    }
-//
-//                                    //////fixit
-//
-//                                }
-//                            } else {
-//                        if (res.name != "gomode") {
+
                         saveEventUseCase.execute(res)
                         insertLastEventServerInDBUseCase.execute(
                             LastEventsServerEntity(
@@ -216,7 +184,7 @@ class ForegroundService() : Service() {
                             )
                         )
                         delay(10)
-                        showNotification("Внимание, новое событие", res.toString())
+
                         preferences
                             .edit()
                             .putInt("EVENT_ID", res.id)
@@ -227,6 +195,9 @@ class ForegroundService() : Service() {
                             .apply()
 
                         if (res.name != "gomode") {
+                            showNotification("Внимание, новое событие", res.toString())
+
+
 
                             deleteEventServerUseCase.execute(
                                 deleteEventDTO = DeleteEventDTO(
