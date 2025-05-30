@@ -17,7 +17,7 @@ fun StatusIndicatorCircle(
     isActive: Boolean,
     modifier: Modifier = Modifier,
     activeColor: Color = Color.Green,
-    inactiveColor: Color = Color.Red,
+    inactiveColor: Color = Color.LightGray,
     height: Dp = 24.dp,
     width: Dp = 24.dp
 ) {

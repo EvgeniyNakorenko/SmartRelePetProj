@@ -208,6 +208,11 @@ fun Dialog(
         INVISIBLE -> TODO()
 
         ERROR -> TODO()
+//        DialogState.SCREEN_NEW -> TODO()
+//        DialogState.SCREEN_DEVICES -> TODO()
+//        DialogState.SCREEN_LOG -> TODO()
+//        DialogState.SCREEN_HOME -> TODO()
+        else -> {}
     }
 
     // Создание диалогового окна с заданными параметрами
@@ -342,7 +347,11 @@ fun Dialog(
                                     labelSt = "Режимы работы реле",
                                     onOptionSelected = { index ->
                                         mainViewModel.set_releModeValue(index)
-                                        mainViewModel.createEvent(ScreenEvent.SaveShPrefSettingsRel(""))
+                                        mainViewModel.createEvent(
+                                            ScreenEvent.SaveShPrefSettingsRel(
+                                                ""
+                                            )
+                                        )
                                     }
                                 )
 
@@ -386,14 +395,33 @@ fun Dialog(
                                                         it.toString().padStart(2, '0')
                                                     },
 //                                                    options = (0..23).toList().map { it.toString() },
-                                                    valueDefault = hoursStateM3.value.padStart(2, '0'),
+                                                    valueDefault = hoursStateM3.value.padStart(
+                                                        2,
+                                                        '0'
+                                                    ),
 //                                                    valueDefault = "00",
                                                     labelSt = "h",
                                                     onOptionSelected = { hours ->
-                                                        hoursStateM3.value = hours.toString().padStart(2, '0')
+                                                        hoursStateM3.value =
+                                                            hours.toString().padStart(2, '0')
 
                                                         releMode3TimeValue.value =
-                                                            "${hoursStateM3.value.padStart(2, '0')}:${minutesStateM3.value.padStart(2, '0')}:${secondsStateM3.value.padStart(2, '0')}"
+                                                            "${
+                                                                hoursStateM3.value.padStart(
+                                                                    2,
+                                                                    '0'
+                                                                )
+                                                            }:${
+                                                                minutesStateM3.value.padStart(
+                                                                    2,
+                                                                    '0'
+                                                                )
+                                                            }:${
+                                                                secondsStateM3.value.padStart(
+                                                                    2,
+                                                                    '0'
+                                                                )
+                                                            }"
 //                                                        mainViewModel.updateReleMode3Time(hours, minutesState.value, secondsState.value)
                                                     }
                                                 )
@@ -402,10 +430,14 @@ fun Dialog(
                                                     options = (0..59).map {
                                                         it.toString().padStart(2, '0')
                                                     },
-                                                    valueDefault = minutesStateM3.value.padStart(2, '0'),
+                                                    valueDefault = minutesStateM3.value.padStart(
+                                                        2,
+                                                        '0'
+                                                    ),
                                                     labelSt = "m",
                                                     onOptionSelected = { minutes ->
-                                                        minutesStateM3.value = minutes.toString().padStart(2, '0')
+                                                        minutesStateM3.value =
+                                                            minutes.toString().padStart(2, '0')
 
                                                         releMode3TimeValue.value =
                                                             "${hoursStateM3.value}:${minutesStateM3.value}:${secondsStateM3.value}"
@@ -418,10 +450,14 @@ fun Dialog(
                                                     options = (0..59).map {
                                                         it.toString().padStart(2, '0')
                                                     },
-                                                    valueDefault = secondsStateM3.value.padStart(2, '0'),
+                                                    valueDefault = secondsStateM3.value.padStart(
+                                                        2,
+                                                        '0'
+                                                    ),
                                                     labelSt = "s",
                                                     onOptionSelected = { seconds ->
-                                                        secondsStateM3.value = seconds.toString().padStart(2, '0')
+                                                        secondsStateM3.value =
+                                                            seconds.toString().padStart(2, '0')
                                                         releMode3TimeValue.value =
                                                             "${hoursStateM3.value}:${minutesStateM3.value}:${secondsStateM3.value}"
 
@@ -492,10 +528,14 @@ fun Dialog(
                                                         options = (0..23).map {
                                                             it.toString().padStart(2, '0')
                                                         },
-                                                        valueDefault = hoursStateM4St.value.padStart(2, '0'),
+                                                        valueDefault = hoursStateM4St.value.padStart(
+                                                            2,
+                                                            '0'
+                                                        ),
                                                         labelSt = "h",
                                                         onOptionSelected = { hours ->
-                                                            hoursStateM4St.value = hours.toString().padStart(2, '0')
+                                                            hoursStateM4St.value =
+                                                                hours.toString().padStart(2, '0')
                                                             releMode4TimeOnValue.value =
                                                                 "${hoursStateM4St.value}:${minutesStateM4St.value}:${secondsStateM4St.value}"
                                                         }
@@ -506,7 +546,10 @@ fun Dialog(
                                                         options = (0..59).map {
                                                             it.toString().padStart(2, '0')
                                                         },
-                                                        valueDefault = minutesStateM4St.value.padStart(2, '0'),
+                                                        valueDefault = minutesStateM4St.value.padStart(
+                                                            2,
+                                                            '0'
+                                                        ),
                                                         labelSt = "m",
                                                         onOptionSelected = { minutes ->
                                                             minutesStateM4St.value =
@@ -545,10 +588,14 @@ fun Dialog(
                                                         options = (0..23).map {
                                                             it.toString().padStart(2, '0')
                                                         },
-                                                        valueDefault = hoursStateM4Fi.value.padStart(2, '0'),
+                                                        valueDefault = hoursStateM4Fi.value.padStart(
+                                                            2,
+                                                            '0'
+                                                        ),
                                                         labelSt = "h",
                                                         onOptionSelected = { hours ->
-                                                            hoursStateM4Fi.value = hours.toString().padStart(2, '0')
+                                                            hoursStateM4Fi.value =
+                                                                hours.toString().padStart(2, '0')
                                                             releMode4TimeOffValue.value =
                                                                 "${hoursStateM4Fi.value}:${minutesStateM4Fi.value}:${secondsStateM4Fi.value}"
 
@@ -561,7 +608,10 @@ fun Dialog(
                                                         options = (0..59).map {
                                                             it.toString().padStart(2, '0')
                                                         },
-                                                        valueDefault = minutesStateM4Fi.value.padStart(2, '0'),
+                                                        valueDefault = minutesStateM4Fi.value.padStart(
+                                                            2,
+                                                            '0'
+                                                        ),
                                                         labelSt = "m",
                                                         onOptionSelected = { minutes ->
                                                             minutesStateM4Fi.value =
@@ -650,10 +700,14 @@ fun Dialog(
                                                         options = (0..23).map {
                                                             it.toString().padStart(2, '0')
                                                         },
-                                                        valueDefault = hoursStateM5St.value.padStart(2, '0'),
+                                                        valueDefault = hoursStateM5St.value.padStart(
+                                                            2,
+                                                            '0'
+                                                        ),
                                                         labelSt = "h",
                                                         onOptionSelected = { hours ->
-                                                            hoursStateM5St.value = hours.toString().padStart(2, '0')
+                                                            hoursStateM5St.value =
+                                                                hours.toString().padStart(2, '0')
                                                             releMode5TimeOnValue.value =
                                                                 "${hoursStateM5St.value}:${minutesStateM5St.value}:${secondsStateM5St.value}"
                                                         }
@@ -664,7 +718,10 @@ fun Dialog(
                                                         options = (0..59).map {
                                                             it.toString().padStart(2, '0')
                                                         },
-                                                        valueDefault = minutesStateM5St.value.padStart(2, '0'),
+                                                        valueDefault = minutesStateM5St.value.padStart(
+                                                            2,
+                                                            '0'
+                                                        ),
                                                         labelSt = "m",
                                                         onOptionSelected = { minutes ->
                                                             minutesStateM5St.value =
@@ -678,7 +735,10 @@ fun Dialog(
                                                         options = (0..59).map {
                                                             it.toString().padStart(2, '0')
                                                         },
-                                                        valueDefault = secondsStateM5St.value.padStart(2, '0'),
+                                                        valueDefault = secondsStateM5St.value.padStart(
+                                                            2,
+                                                            '0'
+                                                        ),
                                                         labelSt = "s",
                                                         onOptionSelected = { seconds ->
                                                             secondsStateM5St.value =
@@ -703,10 +763,14 @@ fun Dialog(
                                                         options = (0..23).map {
                                                             it.toString().padStart(2, '0')
                                                         },
-                                                        valueDefault = hoursStateM5Fi.value.padStart(2, '0'),
+                                                        valueDefault = hoursStateM5Fi.value.padStart(
+                                                            2,
+                                                            '0'
+                                                        ),
                                                         labelSt = "h",
                                                         onOptionSelected = { hours ->
-                                                            hoursStateM5Fi.value = hours.toString().padStart(2, '0')
+                                                            hoursStateM5Fi.value =
+                                                                hours.toString().padStart(2, '0')
                                                             releMode5TimeOffValue.value =
                                                                 "${hoursStateM5Fi.value}:${minutesStateM5Fi.value}:${secondsStateM5Fi.value}"
 
@@ -718,7 +782,10 @@ fun Dialog(
                                                         options = (0..59).map {
                                                             it.toString().padStart(2, '0')
                                                         },
-                                                        valueDefault = minutesStateM5Fi.value.padStart(2, '0'),
+                                                        valueDefault = minutesStateM5Fi.value.padStart(
+                                                            2,
+                                                            '0'
+                                                        ),
                                                         labelSt = "m",
                                                         onOptionSelected = { minutes ->
                                                             minutesStateM5Fi.value =
@@ -733,7 +800,10 @@ fun Dialog(
                                                         options = (0..59).map {
                                                             it.toString().padStart(2, '0')
                                                         },
-                                                        valueDefault = secondsStateM5Fi.value.padStart(2, '0'),
+                                                        valueDefault = secondsStateM5Fi.value.padStart(
+                                                            2,
+                                                            '0'
+                                                        ),
                                                         labelSt = "s",
                                                         onOptionSelected = { seconds ->
                                                             secondsStateM5Fi.value =
@@ -747,8 +817,6 @@ fun Dialog(
                                                 }
                                             }
                                         }
-
-
 
 
                                     }
@@ -974,35 +1042,45 @@ fun Dialog(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    if (mainViewModel.screenState.value.dialogState != SETTINGS_REL) {
-                        Text(
-                            text = "График",
-                            modifier = Modifier
-                                .clickable(onClick = {
-                                    isVisibleGraphicMenu = !isVisibleGraphicMenu
-                                }),
-                            fontSize = 22.sp
-                        )
-                        Column(
-                            modifier = Modifier
-                                .size(
-                                    width = if (isVisibleGraphicMenu) 300.dp else 0.dp,
-                                    height = if (isVisibleGraphicMenu) 100.dp else 0.dp
-                                )
-                                .alpha(if (isVisibleGraphicMenu) 1f else 0f),
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Checkbox(
-                                    checked = checkboxValue3.value,
-                                    onCheckedChange = { checkboxValue3.value = it }
-                                )
-                                Text(text = textCB3Resource)
-                            }
-                        }
-                    }
+//
+//                    if (mainViewModel.screenState.value.dialogState != SETTINGS_REL) {
+//                        Text(
+//                            text = "График",
+//                            modifier = Modifier
+//                                .clickable(onClick = {
+//                                    isVisibleGraphicMenu = !isVisibleGraphicMenu
+//                                }),
+//                            fontSize = 22.sp
+//                        )
+//
+//                        DisplayChartI(
+//                            viewModel = mainViewModel,
+//                            isFullScreen = isVisibleGraphicMenu,
+//                            onCloseFullScreen = { isVisibleGraphicMenu = false } // Закрываем график
+//                        )
+//
+//
+////                        Column(
+////                            modifier = Modifier
+////                                .size(
+////                                    width = if (isVisibleGraphicMenu) 300.dp else 0.dp,
+////                                    height = if (isVisibleGraphicMenu) 100.dp else 0.dp
+////                                )
+////                                .alpha(if (isVisibleGraphicMenu) 1f else 0f),
+////                        ) {
+////                            Row(verticalAlignment = Alignment.CenterVertically) {
+//////                                Checkbox(
+//////                                    checked = checkboxValue3.value,
+//////                                    onCheckedChange = { checkboxValue3.value = it }
+//////                                )
+////                                Text(text = textCB3Resource)
+////                            }
+////                        }
+//                    }
 
                 }
             }
+
         },
 
         confirmButton = {
@@ -1110,6 +1188,7 @@ fun Dialog(
                             mainViewModel.set_releMode3TimeOn(releMode3TimeValue.value)
                         }
                         when (mainViewModel.releModeValue.last()) {
+
                             "Выключено" -> {
 
                                 mainViewModel.createEvent(
@@ -1157,7 +1236,12 @@ fun Dialog(
                             }
 
                             "На время" -> {
-                                mainViewModel.set_releMode3TimeOn(releMode3TimeValue.value.padStart(2, '0'))
+                                mainViewModel.set_releMode3TimeOn(
+                                    releMode3TimeValue.value.padStart(
+                                        2,
+                                        '0'
+                                    )
+                                )
                                 mainViewModel.createEvent(
                                     ScreenEvent.SendServerSettingsMode3(
                                         SendServerSettingsMode3DTO(
@@ -1228,23 +1312,24 @@ fun Dialog(
 
                     ERROR -> TODO()
                     ADD_NEW_REL -> TODO()
+                    DialogState.SCREEN_NEW -> TODO()
+                    DialogState.SCREEN_DEVICES -> TODO()
+                    DialogState.SCREEN_LOG -> TODO()
+                    DialogState.SCREEN_HOME -> TODO()
                 }
 
                 val sendSettingsDTO = SendSettingsDTO(
-//                    dvid = "0123456789qsrt1",
-//                    tkn = "",
-//                    typedv = 5,
-//                    num = 1,
+
                     dvid = deviceData.dvid,
                     tkn = deviceData.tkn,
                     typedv = deviceData.typedv,
                     num = deviceData.num,
                     com = "wp",
                     prton = 5,
-                    upm = if (mainViewModel.checkboxValue1U.last()) 3 else 0,
+                    upm = if (mainViewModel.checkboxValue1U.last()) 1 else 0,
                     ulh = mainViewModel.textFieldValue1U.last(),
                     ull = mainViewModel.textFieldValue2U.last(),
-                    ipm = if (mainViewModel.checkboxValue1I.last()) 3 else 0,
+                    ipm = if (mainViewModel.checkboxValue1I.last()) 1 else 0,
                     ilh = mainViewModel.textFieldValue1I.last(),
                     ill = mainViewModel.textFieldValue2I.last(),
                     ppm = if (mainViewModel.checkboxValue1P.last()) 1 else 0,
@@ -1253,10 +1338,7 @@ fun Dialog(
                     tlh = mainViewModel.textFieldValue1T.last(),
                 )
 
-                if (mainViewModel.screenState.value.dialogState == SETTINGS_I ||
-                    mainViewModel.screenState.value.dialogState == SETTINGS_U ||
-                    mainViewModel.screenState.value.dialogState == SETTINGS_P ||
-                    mainViewModel.screenState.value.dialogState == SETTINGS_TEMP
+                if (mainViewModel.screenState.value.dialogState != SETTINGS_REL
                 ) {
                     mainViewModel.createEvent(ScreenEvent.SendSettingsServer(sendSettingsDTO))
                 }
@@ -1291,7 +1373,11 @@ enum class DialogState {
     SETTINGS_TEMP,
     SETTINGS_REL,
     ADD_NEW_REL,
-    ERROR
+    ERROR,
+    SCREEN_NEW,
+    SCREEN_DEVICES,
+    SCREEN_LOG,
+    SCREEN_HOME
 }
 
 
@@ -1321,7 +1407,6 @@ fun CustomSpinner(
         TextField(
             modifier = Modifier.menuAnchor(),
             value = displayedValue,
-//            value = mainViewModel.releModeValue.last(),
             onValueChange = { /* Не изменять */ },
             readOnly = true,
             label = { Text(labelSt) },

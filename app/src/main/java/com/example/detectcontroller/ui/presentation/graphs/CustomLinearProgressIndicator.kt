@@ -1,4 +1,4 @@
-package com.example.detectcontroller.ui.presentation.composeFunc
+package com.example.detectcontroller.ui.presentation.graphs
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box

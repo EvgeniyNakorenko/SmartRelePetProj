@@ -19,6 +19,7 @@ import com.example.detectcontroller.data.local.locDTO.RegServerEntity
 import com.example.detectcontroller.data.remote.remDTO.DeleteEventDTO
 import com.example.detectcontroller.data.remote.remDTO.RequestDataDTO
 import com.example.detectcontroller.data.remote.remDTO.StatusEventServerDTO
+import com.example.detectcontroller.data.remote.remDTO.UiState
 import com.example.detectcontroller.domain.db.GetAllRegServerFromDBUseCase
 import com.example.detectcontroller.domain.db.GetOneLastEventServerFromDBUseCase
 import com.example.detectcontroller.domain.db.InsertLastEventServerInDBUseCase
@@ -215,7 +216,7 @@ class ForegroundService() : Service() {
                     }?.onFailure { error ->
                         error.printStackTrace()
                     }
-                    delay(5000)
+                    delay(3000)
                 } catch (e: Exception) {
                     Log.e(TAG, "download error", e)
                 }
@@ -270,13 +271,33 @@ class ForegroundService() : Service() {
                             com = regData.com
                         )
                     }
+
+
+                    ////////////////////////////////////////////
+                    repeat(9) {
+                        saveDataInDBUseCase.execute(
+                            UiState(
+                                "timedv: ${Random.nextInt(1, 31)}-06-2024 14:13:12",
+                                "----0",
+                                "----${Random.nextInt(200, 230)}",
+                                "----${Random.nextInt(2, 6)}",
+                                "----${Random.nextInt(800, 1200)}",
+                                "----${Random.nextInt(48, 52)}",
+                                "----${Random.nextInt(20, 31)}"
+                            )
+                        )
+                    }
+                    delay(500)
+                    ////////////////////////////////////////////
+
+
                     val fact = loadReq?.let { fetchDataUseCase.execute(it) }
                     fact?.onSuccess { res ->
                         saveDataInDBUseCase.execute(res)
                     }?.onFailure { error ->
                         error.printStackTrace()
                     }
-                    delay(5000)
+                    delay(30000)
                 } catch (e: Exception) {
                     Log.e(TAG, "download error", e)
                 }

@@ -16,9 +16,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.detectcontroller.ui.presentation.MainViewModel
+import com.example.detectcontroller.ui.presentation.ScreenEvent
+import com.example.detectcontroller.ui.presentation.composeFunc.DialogState
 
 @Composable
-fun Devices() {
+fun Devices(mainViewModel: MainViewModel) {
+    mainViewModel.createEvent(ScreenEvent.ShowScreen(DialogState.SCREEN_DEVICES))
+
     Box(
         modifier = Modifier.fillMaxSize(),
 //        contentAlignment = Alignment.Center

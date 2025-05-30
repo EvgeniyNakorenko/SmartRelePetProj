@@ -27,16 +27,21 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
 import co.yml.charts.common.extensions.isNotNull
 import com.example.detectcontroller.data.remote.remDTO.RegResponseDTO
 import com.example.detectcontroller.data.remote.remDTO.RequestDataDTO
 import com.example.detectcontroller.ui.presentation.MainViewModel
 import com.example.detectcontroller.ui.presentation.ScreenEvent
+import com.example.detectcontroller.ui.presentation.composeFunc.DialogState
+import com.example.detectcontroller.ui.presentation.utils.Screen
 
 
 @Composable
-fun New(mainViewModel: MainViewModel,) {
+fun New(mainViewModel: MainViewModel) {
 
+    mainViewModel.createEvent(ScreenEvent.ShowScreen(DialogState.SCREEN_NEW))
     val titleResource =
         "Выберите интерфейс общения для регистрации"
     val textCB1Resource = "Wi-Fi"
@@ -52,7 +57,11 @@ fun New(mainViewModel: MainViewModel,) {
     val tknValue1 =
         remember { mutableStateOf(mainViewModel.regDataWIFI?.lastOrNull()?.tkn ?: "0") }
     val typedvValue1 =
-        remember { mutableStateOf(mainViewModel.regDataWIFI?.lastOrNull()?.typedv.toString() ?: "") }
+        remember {
+            mutableStateOf(
+                mainViewModel.regDataWIFI?.lastOrNull()?.typedv.toString() ?: ""
+            )
+        }
     val numValue1 =
         remember { mutableStateOf(mainViewModel.regDataWIFI?.lastOrNull()?.num.toString() ?: "") }
 
@@ -125,21 +134,27 @@ fun New(mainViewModel: MainViewModel,) {
 //                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
                     label = { Text("tkn") }
                 )
+
                 OutlinedTextField(
-                    value = typedvValue1.value,
+                    value = "5",
+//                    value = typedvValue1.value,
                     onValueChange = { newValue ->
                         typedvValue1.value = newValue
                     },
-                    enabled = checkboxValue2.value,
+                    enabled = false,
+//                    enabled = checkboxValue2.value,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     label = { Text("typedv") }
                 )
+
                 OutlinedTextField(
-                    value = numValue1.value,
+                    value = "4",
+//                    value = numValue1.value,
                     onValueChange = { newValue ->
                         numValue1.value = newValue
                     },
-                    enabled = checkboxValue2.value,
+                    enabled = false,
+//                    enabled = checkboxValue2.value,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     label = { Text("num") }
                 )
@@ -153,7 +168,12 @@ fun New(mainViewModel: MainViewModel,) {
             ) {
                 Button(
                     shape = RoundedCornerShape(8.dp),
-                    onClick = { /* Handle Cancel action */ },
+                    onClick = {
+                        if (checkboxValue2.value){
+                            dvidValue1.value = ""
+                            tknValue1.value = ""
+                        }
+                    },
                     modifier = Modifier
                         .padding(end = 8.dp)
                         .weight(1f)
@@ -163,7 +183,7 @@ fun New(mainViewModel: MainViewModel,) {
                         contentColor = MaterialTheme.colorScheme.error
                     )
                 ) {
-                    Text("Cancel")
+                    Text("Clear")
                 }
 
                 Button(
@@ -180,12 +200,23 @@ fun New(mainViewModel: MainViewModel,) {
                                 RegResponseDTO(
                                     devid = dvidValue1.value,
                                     token = tknValue1.value,
-                                    typedv = typedvValue1.value.toInt(),
-                                    num = numValue1.value.toInt()
+                                    typedv = 5,
+//                                    typedv = typedvValue1.value.toInt(),
+                                    num = 4
+//                                    num = numValue1.value.toInt()
                                 )
                             )
                             mainViewModel.createEvent(ScreenEvent.RegSMS(""))
                         }
+
+//                        navController.navigate(Screen.Home.route) {
+//                            popUpTo(navController.graph.findStartDestination().id) {
+//                                saveState = true
+//                            }
+//                            launchSingleTop = true
+//                            restoreState = true
+//                        }
+
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.White,

@@ -25,10 +25,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.detectcontroller.ui.presentation.MainViewModel
+import com.example.detectcontroller.ui.presentation.ScreenEvent
+import com.example.detectcontroller.ui.presentation.composeFunc.DialogState
 
 
 @Composable
 fun Log(mainViewModel: MainViewModel , preferences: SharedPreferences) {
+    mainViewModel.createEvent(ScreenEvent.ShowScreen(DialogState.SCREEN_LOG))
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center

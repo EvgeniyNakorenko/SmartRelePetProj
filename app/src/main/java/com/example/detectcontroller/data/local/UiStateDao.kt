@@ -29,7 +29,7 @@ interface UiStateDao {
     @Query("SELECT * FROM event_server ORDER BY id DESC LIMIT 1")
     suspend fun getLastEventServer(): EventServerEntity?
 
-    @Query("SELECT * FROM ui_state ORDER BY id DESC LIMIT 7")
+    @Query("SELECT * FROM ui_state ORDER BY id DESC LIMIT 200")
     suspend fun getFirstTen(): List<UiStateEntity>
 
     @Query("SELECT * FROM reg_server_data WHERE dvid = :dvid")

@@ -1,4 +1,4 @@
-package com.example.detectcontroller.ui.presentation.composeFunc
+package com.example.detectcontroller.ui.presentation.graphs
 
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
@@ -137,6 +137,45 @@ class LineChartScreen {
         }
     }
 
+//    @Composable
+//    fun DisplayChartI(viewModel: MainViewModel, isFullScreen: Boolean) {
+//        val uiStates by viewModel.uiStateListGraph.collectAsState()
+//        val reversedUiStates = uiStates.reversed()
+//        val pointsDataI = convertUiStatesToPointsI(reversedUiStates)
+//        val configuration = LocalConfiguration.current
+//        val screenHeight = configuration.screenHeightDp
+//        val chartHeight = if (isFullScreen) screenHeight else screenHeight / 1
+//
+//        val xMod = reversedUiStates.map { it.timedv.drop(8).take(9).replace('-', '.') }
+//
+//        Column(
+//            modifier = Modifier
+//                .heightIn(max = if (isFullScreen) Dp.Infinity else 400.dp)
+//                .fillMaxSize()
+//        ) {
+//            if (!isFullScreen) {
+//                Text(
+//                    text = "I, A",
+//                    modifier = Modifier.padding(start = 10.dp)
+//                )
+//            }
+//            Crossfade(
+//                targetState = pointsDataI,
+//                animationSpec = tween(durationMillis = 500)
+//            ) { data ->
+//                SingleLineChartWithGridLines(
+//                    data,
+//                    chartHeight,
+//                    Color.Yellow,
+//                    modifier = Modifier.weight(1f),
+//                    xMod,
+//                    textSize = if (isFullScreen) 24 else 16 // Увеличиваем текст в полноэкранном режиме
+//                )
+//            }
+//        }
+//    }
+
+
     @Composable
     fun DisplayChartI(viewModel: MainViewModel) {
         val uiStates by viewModel.uiStateListGraph.collectAsState()
@@ -244,9 +283,12 @@ class LineChartScreen {
     fun GraphSwitcher(mainViewModel: MainViewModel) {
         var currentGraph by remember { mutableStateOf(0) }
 
-        val isCheckboxValue3Checked = mainViewModel.checkboxValue3I.last()
-        val isCheckboxValue3UChecked = mainViewModel.checkboxValue3U.last()
-        val isCheckboxValue3PChecked = mainViewModel.checkboxValue3P.last()
+        val isCheckboxValue3Checked = true
+//        val isCheckboxValue3Checked = mainViewModel.checkboxValue3I.last()
+        val isCheckboxValue3UChecked = true
+//        val isCheckboxValue3UChecked = mainViewModel.checkboxValue3U.last()
+        val isCheckboxValue3PChecked = true
+//        val isCheckboxValue3PChecked = mainViewModel.checkboxValue3P.last()
 
         val activeGraphs = listOf(
             isCheckboxValue3Checked,
@@ -340,3 +382,247 @@ fun convertUiStatesToPointsP(uiStates: List<UiState>): List<Point> {
     }
 }
 
+
+
+
+/////////////////////////////
+//
+//@Composable
+//fun RotatedSingleLineChartWithGridLines(
+//    pointsData: List<Point>,
+//    lineColor: Color,
+//    xMod: List<String>,
+//    modifier: Modifier = Modifier,
+//    textSize: Int = 12
+//) {
+//    if (pointsData.isEmpty()) {
+//        Text("Нет данных для отображения графика")
+//        return
+//    }
+//
+//    val steps = 5
+//    val axisLabelFontSize = 12.sp
+//
+//    val xAxisData = AxisData.Builder()
+//        .axisStepSize(33.dp)
+//        .topPadding(105.dp)
+//        .steps(pointsData.size - 1)
+//        .labelData { i ->
+//            xMod[i].take(5).apply {
+//                if (this.lastOrNull() == '.') {
+//                    this.dropLast(1)
+//                }
+//            }
+//        }
+//        .labelAndAxisLinePadding(15.dp)
+//        .axisLabelFontSize(axisLabelFontSize)
+//        .build()
+//
+//    val yAxisData = AxisData.Builder()
+//        .steps(steps)
+//        .labelAndAxisLinePadding(20.dp)
+//        .axisLabelFontSize(axisLabelFontSize)
+//        .labelData { i ->
+//            val yMin = pointsData.minOf { it.y }
+//            val yMax = pointsData.maxOf { it.y }
+//            val yScale = (yMax - yMin) / steps
+//            val value = ((i * yScale) + yMin).toFloat()
+//            String.format("%.1f", value)
+//        }
+//        .build()
+//
+//    val data = LineChartData(
+//        linePlotData = LinePlotData(
+//            lines = listOf(
+//                Line(
+//                    dataPoints = pointsData,
+//                    LineStyle(color = lineColor),
+//                    IntersectionPoint(radius = 3.dp),
+//                    SelectionHighlightPoint(),
+//                    ShadowUnderLine(),
+//                    SelectionHighlightPopUp(
+//                        labelSize = 12.sp,
+//                        popUpLabel = { _, y -> "Y: ${String.format("%.1f", y)}" }
+//                    )
+//                )
+//            )
+//        ),
+//        xAxisData = xAxisData,
+//        yAxisData = yAxisData,
+//        gridLines = GridLines()
+//    )
+//
+//    Box(
+//        modifier = modifier
+//            .fillMaxSize()
+//            .rotate(90f)
+//    ) {
+//        LineChart(
+//            modifier = Modifier.fillMaxSize(),
+//            lineChartData = data
+//        )
+//    }
+//}
+//
+//@Composable
+//fun FullScreenRotatedChartI(viewModel: MainViewModel) {
+//    val uiStates by viewModel.uiStateListGraph.collectAsState()
+//    val reversedUiStates = uiStates.reversed()
+//    val pointsDataI = convertUiStatesToPointsI(reversedUiStates)
+//    val xMod = reversedUiStates.map { it.timedv.drop(8).take(9).replace('-', '.') }
+//
+//    Box(
+//        modifier = Modifier.fillMaxSize(),
+//        contentAlignment = Alignment.Center
+//    ) {
+//        RotatedSingleLineChartWithGridLines(
+//            pointsData = pointsDataI,
+//            lineColor = Color.Yellow,
+//            xMod = xMod,
+//            textSize = 24
+//        )
+//
+//        // Повернутая метка
+//        Box(
+//            modifier = Modifier
+//                .align(Alignment.TopStart)
+//                .padding(16.dp)
+//                .rotate(-90f)
+//        ) {
+//            Text(
+//                text = "I, A",
+//                fontSize = 24.sp,
+//                fontWeight = FontWeight.Bold
+//            )
+//        }
+//    }
+//}
+//
+//@Composable
+//fun FullScreenRotatedChartU(viewModel: MainViewModel) {
+//    val uiStates by viewModel.uiStateListGraph.collectAsState()
+//    val reversedUiStates = uiStates.reversed()
+//    val pointsDataU = convertUiStatesToPointsU(reversedUiStates)
+//    val xMod = reversedUiStates.map { it.timedv.drop(8).take(9).replace('-', '.') }
+//
+//    Box(
+//        modifier = Modifier.fillMaxSize(),
+//        contentAlignment = Alignment.Center
+//    ) {
+//        RotatedSingleLineChartWithGridLines(
+//            pointsData = pointsDataU,
+//            lineColor = Color.Magenta,
+//            xMod = xMod,
+//            textSize = 24
+//        )
+//
+//        Box(
+//            modifier = Modifier
+//                .align(Alignment.TopStart)
+//                .padding(16.dp)
+//                .rotate(-90f)
+//        ) {
+//            Text(
+//                text = "U, В",
+//                fontSize = 24.sp,
+//                fontWeight = FontWeight.Bold
+//            )
+//        }
+//    }
+//}
+//
+//@Composable
+//fun FullScreenRotatedChartP(viewModel: MainViewModel) {
+//    val uiStates by viewModel.uiStateListGraph.collectAsState()
+//    val reversedUiStates = uiStates.reversed()
+//    val pointsDataP = convertUiStatesToPointsP(reversedUiStates)
+//    val xMod = reversedUiStates.map { it.timedv.drop(8).take(9).replace('-', '.') }
+//
+//    Box(
+//        modifier = Modifier.fillMaxSize(),
+//        contentAlignment = Alignment.Center
+//    ) {
+//        RotatedSingleLineChartWithGridLines(
+//            pointsData = pointsDataP,
+//            lineColor = Color.Cyan,
+//            xMod = xMod,
+//            textSize = 24
+//        )
+//
+//        Box(
+//            modifier = Modifier
+//                .align(Alignment.TopStart)
+//                .padding(16.dp)
+//                .rotate(-90f)
+//        ) {
+//            Text(
+//                text = "P, Вт",
+//                fontSize = 24.sp,
+//                fontWeight = FontWeight.Bold
+//            )
+//        }
+//    }
+//}
+
+//@Composable
+//fun FullScreenGraphSwitcher(mainViewModel: MainViewModel) {
+//    var currentGraph by remember { mutableStateOf(0) }
+//
+//    val isCheckboxValue3Checked = true
+//    val isCheckboxValue3UChecked = true
+//    val isCheckboxValue3PChecked = true
+//
+//
+//    val activeGraphs = listOf(
+//        isCheckboxValue3Checked,
+//        isCheckboxValue3UChecked,
+//        isCheckboxValue3PChecked
+//    ).mapIndexedNotNull { index, isChecked ->
+//        if (isChecked) index else null
+//    }
+//
+//    if (currentGraph >= activeGraphs.size) {
+//        currentGraph = 0
+//    }
+//
+//    fun nextGraph() {
+//        currentGraph = (currentGraph + 1) % activeGraphs.size
+//    }
+//
+//    Column(
+//        modifier = Modifier.fillMaxSize(),
+//        horizontalAlignment = Alignment.CenterHorizontally,
+//        verticalArrangement = Arrangement.Center
+//    ) {
+//        if (activeGraphs.size > 1) {
+//            Button(
+//                onClick = { nextGraph() },
+//                modifier = Modifier
+//                    .size(170.dp, 30.dp)
+//                    .rotate(-90f),
+//                colors = ButtonDefaults.buttonColors(
+//                    containerColor = Color.LightGray,
+//                    contentColor = Color.Black
+//                )
+//            ) {
+//                Text(
+//                    text = "Следующий график",
+//                    fontSize = 12.sp,
+//                    fontWeight = FontWeight.Normal
+//                )
+//            }
+//        }
+//
+//        Crossfade(
+//            targetState = currentGraph,
+//            modifier = Modifier.fillMaxSize()
+//        ) { graphIndex ->
+//            when (activeGraphs.getOrNull(graphIndex)) {
+//                0 -> FullScreenRotatedChartI(mainViewModel)
+//                1 -> FullScreenRotatedChartU(mainViewModel)
+//                2 -> FullScreenRotatedChartP(mainViewModel)
+//            }
+//        }
+//    }
+//}
+//

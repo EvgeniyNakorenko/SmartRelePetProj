@@ -5,13 +5,16 @@ import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
+import android.content.pm.ActivityInfo
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -49,13 +52,13 @@ import com.example.detectcontroller.domain.server.SendServerSettingsMode5UseCase
 import com.example.detectcontroller.domain.server.SendSettingsServerUseCase
 import com.example.detectcontroller.ui.presentation.composeFunc.DialogState
 import com.example.detectcontroller.ui.presentation.composeFunc.DialogState.INVISIBLE
+import com.example.detectcontroller.ui.presentation.composeFunc.DialogState.SCREEN_HOME
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlin.coroutines.cancellation.CancellationException
 
@@ -78,6 +81,7 @@ data class ListState(
     var eventAlarmVisible: Boolean = false,
     val const: Boolean = false,
     var dialogState: DialogState = INVISIBLE,
+    var currentScreen: DialogState = SCREEN_HOME,
     var counter: Int = 0
 )
 
@@ -100,6 +104,7 @@ sealed class ScreenEvent {
     data class DeleteEventAlarmFromServer(val value: String) : ScreenEvent()
 
     data class ShowDialog(val value: DialogState) : ScreenEvent()
+    data class ShowScreen(val value: DialogState) : ScreenEvent()
     data class RegSMS(val value: String) : ScreenEvent()
     data class RegWIFI(val value: String) : ScreenEvent()
     data class SendSettingsServer(val value: SendSettingsDTO) : ScreenEvent()
@@ -109,6 +114,9 @@ sealed class ScreenEvent {
     data class SendServerSettingsMode012(val value: SendServerSettingsMode012DTO) : ScreenEvent()
     data class SendServerGoMode(val value: String) : ScreenEvent()
     data class GetServerSettings(val value: RequestDataDTO) : ScreenEvent()
+
+
+    data class SendServerStopMode(val value: String) : ScreenEvent()
 }
 
 class MainViewModel(
@@ -197,6 +205,9 @@ class MainViewModel(
         const val REG_COM = "com"
     }
 
+//    var _screenOrientation by mutableStateOf(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
+
+
     private val preferences: SharedPreferences =
         application.getSharedPreferences(REL_SETTINGS, Context.MODE_PRIVATE)
 
@@ -210,12 +221,52 @@ class MainViewModel(
         )
     )
 
+    private val _isVisibleAlertU = MutableStateFlow(false)
+    val isVisibleAlertU: StateFlow<Boolean> = _isVisibleAlertU
+
+    private val _isVisibleAlertI = MutableStateFlow(false)
+    val isVisibleAlertI: StateFlow<Boolean> = _isVisibleAlertI
+
+    private val _isVisibleAlertP = MutableStateFlow(false)
+    val isVisibleAlertP: StateFlow<Boolean> = _isVisibleAlertP
+
+    fun startEventsChecking(savedId: Int) {
+        viewModelScope.launch {
+            while (screenState.value.currentScreen == DialogState.SCREEN_HOME) {
+                loadEvents()
+                checkEvents(savedId)
+                delay(3000)
+            }
+        }
+
+    }
+
+    private suspend fun loadEvents() {
+        createEvent(ScreenEvent.LoadLastEventServerFromDB(""))
+        createEvent(ScreenEvent.LoadEventServerFromDB(""))
+    }
+
+    private fun checkEvents(savedId: Int) {
+        _eventServerList.value
+            .asReversed()
+            .take(20)
+            .forEach { event ->
+                when (event.name) {
+                    "evu" -> if (event.id > savedId) _isVisibleAlertU.value = true
+                    "evi" -> if (event.id > savedId) _isVisibleAlertI.value = true
+                    "evp" -> if (event.id > savedId) _isVisibleAlertP.value = true
+                    "gomode" -> createEvent(ScreenEvent.DeleteEventAlarmFromServer(""))
+                }
+            }
+    }
+
     val finalEventState: StateFlow<StatusEventServerDTO?> = _finalEventState
 
     private val scope = CoroutineScope(Dispatchers.IO)
 
     private val _screenState = mutableStateOf(ListState())
     val screenState: State<ListState> = _screenState
+
 
     private val _uiState = MutableStateFlow(UiState())
     val uiState: StateFlow<UiState> = _uiState
@@ -234,8 +285,8 @@ class MainViewModel(
         RequestDataDTO(
             dvid = preferences.getString(REG_DVID, "0").toString(),
             tkn = preferences.getString(REG_TKN, "0").toString(),
-            typedv = preferences.getString(REG_TYPEDV, "0")?.toInt() ?: 0,
-            num = preferences.getString(REG_NUM, "0")?.toInt() ?: 0,
+            typedv = preferences.getString(REG_TYPEDV, "5")?.toInt() ?: 0,
+            num = preferences.getString(REG_NUM, "4")?.toInt() ?: 0,
             com = preferences.getString(REG_COM, "").toString()
         )
     )
@@ -376,13 +427,12 @@ class MainViewModel(
     //releStt
 
     //    var releStt : Boolean = false
-    private val _releStt = MutableStateFlow(true)
-    val releStt: StateFlow<Boolean> = _releStt
+//    private val _releStt = MutableStateFlow(true)
+//    val releStt: StateFlow<Boolean> = _releStt
     fun set_releStt(value: Boolean) {
         Thread.sleep(100)
-        _releStt.value = value
+//        _releStt.value = value
     }
-
 
     //I
     private val _textFieldValue1I =
@@ -657,25 +707,25 @@ class MainViewModel(
             is ScreenEvent.SendServerSettingsMode3 -> {
                 sendServerSettingsMode3(event.value)
                 _releModeGO.value = false
-                _releStt.value = false
+//                _releStt.value = false
             }
 
             is ScreenEvent.SendServerSettingsMode4 -> {
                 sendServerSettingsMode4(event.value)
                 _releModeGO.value = false
-                _releStt.value = false
+//                _releStt.value = false
             }
 
             is ScreenEvent.SendServerSettingsMode5 -> {
                 sendServerSettingsMode5(event.value)
                 _releModeGO.value = false
-                _releStt.value = false
+//                _releStt.value = false
             }
 
             is ScreenEvent.SendServerSettingsMode012 -> {
                 sendServerSettingsMode012(event.value)
                 _releModeGO.value = false
-                _releStt.value = false
+//                _releStt.value = false
             }
 
             is ScreenEvent.GetServerSettings -> getSettingsServer(event.value)
@@ -684,15 +734,26 @@ class MainViewModel(
                 sendServerGOMode()
 //                set_buttonGoVisib(res)
             }
+
+            is ScreenEvent.ShowScreen -> {
+                _screenState.value = _screenState.value.copy(currentScreen = event.value)
+            }
+
+            is ScreenEvent.SendServerStopMode -> {
+                sendServerStopMode()
+//                restartRel()
+            }
         }
     }
 
+
     private suspend fun sendServerGOMode() {
+        Thread.sleep(100)
+        _buttonGoVisib.value = false
         val reqDVID = preferences.getString(REG_DVID, "") ?: ""
         val reqTKN = preferences.getString(REG_TKN, "") ?: ""
         val reqTYPEVD = preferences.getString(REG_TYPEDV, "")?.toIntOrNull() ?: 0
         val reqNUM = preferences.getString(REG_NUM, "")?.toIntOrNull() ?: 0
-        val releState = preferences.getBoolean(RELE_MODE_GO, false)
 
         val sendServerGoMode = sendServerGoModeUseCase.execute(
             RequestDataDTO(reqDVID, reqTKN, reqTYPEVD, reqNUM, "gomode")
@@ -712,6 +773,36 @@ class MainViewModel(
 //            set_buttonGoVisib(true)
         }
     }
+
+
+    private suspend fun sendServerStopMode() {
+        Thread.sleep(100)
+        _buttonGoVisib.value = false
+        val reqDVID = preferences.getString(REG_DVID, "") ?: ""
+        val reqTKN = preferences.getString(REG_TKN, "") ?: ""
+        val reqTYPEVD = preferences.getString(REG_TYPEDV, "")?.toIntOrNull() ?: 0
+        val reqNUM = preferences.getString(REG_NUM, "")?.toIntOrNull() ?: 0
+
+        val sendServerGoMode = sendServerGoModeUseCase.execute(
+            RequestDataDTO(reqDVID, reqTKN, reqTYPEVD, reqNUM, "stop")
+        )
+        showToast("Команда отправлена на сервер")
+        sendServerGoMode.onSuccess { result ->
+            if (result.status == 0) {
+
+                showToastDelay("Ожидаем ответ на устройство")
+                println("stop отправлен на сервер")
+            } else {
+                println("stop не отправлен на сервер")
+            }
+        }.onFailure { e ->
+            e.printStackTrace()
+            showToast("stop не отправлен на сервер")
+//            set_buttonGoVisib(true)
+        }
+    }
+
+
 
     private fun saveShPrefSettingsRel() {
         preferences
@@ -849,7 +940,7 @@ class MainViewModel(
         toastJob?.cancel()
         toastJob = viewModelScope.launch(Dispatchers.Main) {
             try {
-                delay(7000)
+                delay(3000)
                 if (context is Activity && !context.isFinishing) {
                     Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                 }
@@ -968,7 +1059,7 @@ class MainViewModel(
     }
 
 
-    private fun deleteDeviceEventServer() {
+    private suspend fun deleteDeviceEventServer() {
         viewModelScope.launch {
             try {
                 val reqDVID = preferences.getString(REG_DVID, "") ?: ""
@@ -983,75 +1074,59 @@ class MainViewModel(
                     reqNUMString.toInt()
                 } else 0
 
-//                val event = loadLastEventServerFromDBUseCase.execute()
                 val event =
-                    getOneLastEventServerFromDBUseCase.execute(preferences.getInt("EVENT_ID", 0))
+                    getOneLastEventServerFromDBUseCase.execute(
+                        preferences.getInt(
+                            "EVENT_ID",
+                            0
+                        )
+                    )
                 val dto =
-                    DeleteEventDTO(reqDVID, reqTKN, reqTYPEVD, reqNUM, "del", event?.id ?: 0)
+                    DeleteEventDTO(
+                        reqDVID,
+                        reqTKN,
+                        reqTYPEVD,
+                        reqNUM,
+                        "del",
+                        event?.id ?: 0
+                    )
 
                 val del = deleteEventServerUseCase.execute(dto)
+                when (event?.rstate) {
+                    "0" -> {
+                        sendServerStopMode()
+                        _releModeGO.value = false
+                        preferences.edit().putBoolean(RELE_MODE_GO, false).apply()
+                        _buttonGoVisib.value = true
 
+
+                    }
+
+                    "1" -> {
+                        _releModeGO.value = true
+                        preferences.edit().putBoolean(RELE_MODE_GO, true).apply()
+                        _buttonGoVisib.value = true
+                    }
+
+                    "3" -> {
+                        sendServerStopMode()
+                        _releModeGO.value = false
+                        preferences.edit().putBoolean(RELE_MODE_GO, false).apply()
+                        _buttonGoVisib.value = true
+
+
+
+                    }
+
+                    "6" -> {
+                        _releModeGO.value = true
+                        preferences.edit().putBoolean(RELE_MODE_GO, true).apply()
+                        _buttonGoVisib.value = true
+                    }
+                }
                 del.onSuccess { res ->
                     if (res.success) {
-//                        showToast("Событие (id=$reqDVID) сохранено в журнал и удалено с сервера")
 
-                        when (event?.rstate) {
-                            "0" -> {
-                                _releModeGO.value = false
-                                preferences.edit().putBoolean(RELE_MODE_GO, false).apply()
-                                _buttonGoVisib.value = true
-                                _releStt.value = false
-                                _uiState.value = _uiState.value.copy(stt = "stt: 0")
-
-                            }
-
-                            "1" -> {
-
-                                _releModeGO.value = true
-                                preferences.edit().putBoolean(RELE_MODE_GO, true).apply()
-                                _buttonGoVisib.value = true
-                                _releStt.value = true
-                                _uiState.value = _uiState.value.copy(stt = "stt: 1")
-                            }
-
-                            "2" -> {
-                                _releModeGO.value = true
-                                preferences.edit().putBoolean(RELE_MODE_GO, true).apply()
-                                _buttonGoVisib.value = true
-
-                            }
-
-                            "3" -> {
-                                _releModeGO.value = false
-                                preferences.edit().putBoolean(RELE_MODE_GO, false).apply()
-                                _buttonGoVisib.value = true
-
-                                _releStt.value = false
-                                _uiState.value = _uiState.value.copy(stt = "stt: 0")
-                            }
-
-                            "4" -> {
-                                _releModeGO.value = false
-                                preferences.edit().putBoolean(RELE_MODE_GO, false).apply()
-                                _buttonGoVisib.value = true
-
-                            }
-
-                            "5" -> {
-                                _releModeGO.value = false
-                                preferences.edit().putBoolean(RELE_MODE_GO, false).apply()
-                                _buttonGoVisib.value = true
-
-                            }
-
-                            "6" -> {
-                                _releModeGO.value = true
-                                preferences.edit().putBoolean(RELE_MODE_GO, true).apply()
-                                _buttonGoVisib.value = true
-                                _releStt.value = true
-                                _uiState.value = _uiState.value.copy(stt = "stt: 1")
-                            }
-                        }
 
                         deleteLastEventServerByIdFromDBUseCase.execute(
                             preferences.getInt(
@@ -1059,6 +1134,7 @@ class MainViewModel(
                                 0
                             )
                         )
+
                         preferences
                             .edit()
                             .putInt("EVENT_ID", 0)
@@ -1071,6 +1147,7 @@ class MainViewModel(
                         _finalEventState.value = StatusEventServerDTO(0)
                     }
                 }.onFailure { error ->
+                    deleteDeviceEventServer()
                     error.printStackTrace()
                 }
             } catch (e: Exception) {
@@ -1141,22 +1218,17 @@ class MainViewModel(
         viewModelScope.launch {
             while (true) {
                 ////////////////
-//                0 -> res = "Выключено"
-//                1 -> res = "Тумблер"
-//                2 -> res = "Кнопка"
-//                3 -> res = "На время"
-//                4 -> res = "Таймер"
-//                5 -> res = "Цикл"
+
                 val uiStateFromDb = loadDataFromDBUseCase.execute()
                 _uiStateList.value = uiStateFromDb
                 if (uiStateFromDb.isNotEmpty()) {
                     _uiState.value = uiStateFromDb.first()
-                    if (_releModeValue.last() != "Тумблер" && _releModeValue.last() != "Кнопка" && _releModeValue.last() != "На время" ) {
-                        _releStt.value = _uiState.value.stt == "stt: 1"
-                    }
+//                    if (_releModeValue.last() != "Тумблер" && _releModeValue.last() != "Кнопка" && _releModeValue.last() != "На время" ) {
+//                        _releStt.value = _uiState.value.stt == "stt: 1"
+//                    }
 
                 }
-                delay(5000)
+                delay(500)
             }
         }
     }
@@ -1173,7 +1245,8 @@ class MainViewModel(
 
             val savedEventPrefsID = preferences.getInt("EVENT_ID", 0)
             try {
-                val lastEvent = getOneLastEventServerFromDBUseCase.execute(savedEventPrefsID)
+                val lastEvent =
+                    getOneLastEventServerFromDBUseCase.execute(savedEventPrefsID)
 
                 if (lastEvent != null) {
                     _finalEventState.value = lastEvent
