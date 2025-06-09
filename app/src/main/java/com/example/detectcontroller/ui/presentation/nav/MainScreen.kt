@@ -58,19 +58,7 @@ fun MainScreen(mainViewModel: MainViewModel,
                 enterTransition = { slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left) },
                 exitTransition = { slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Left) }
             ){ Log(mainViewModel, preferences)}
-
-//            composable(
-//                Screen.FullChart.route,
-//                enterTransition = {
-//                    slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left)
-//                },
-//                exitTransition = {
-//                    slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Left)
-//                }
-//            ) {
-//                FullChartScreen(mainViewModel, onBack = { navController.popBackStack() })
-//            }
-
+            
             composable(
                 Screen.DisplayChartU.route,
                 enterTransition = {
