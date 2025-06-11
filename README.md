@@ -1,1 +1,1 @@
-Pet project in progress.
+Pet project in progress. (compose)
