@@ -8,5 +8,9 @@ data class UiState(
     var pwr: String = "LoadLoad..",
     val frq: String = "LoadLoad..",
     val tmp: String = "LoadLoad..",
-    val error: String? = null
+    val rmode: String = "LoadLoad..",
+    val gomode: String = "LoadLoad..",
+    val modes: String = "LoadLoad..",
+//    val bVis: Boolean ,
+//    val error: String? = null
 )

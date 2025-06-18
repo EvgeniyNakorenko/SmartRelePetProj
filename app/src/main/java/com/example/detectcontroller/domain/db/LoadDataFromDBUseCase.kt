@@ -21,7 +21,11 @@ class LoadDataFromDBUseCase(private val database: AppDatabase) {
                         irl = data.irl,
                         pwr = data.pwr,
                         frq = data.frq,
-                        tmp = data.tmp
+                        tmp = data.tmp,
+                        rmode = data.rmode,
+                        gomode = data.gomode,
+                        modes = data.modes,
+//                        bVis = false
                     )
                 }
             }

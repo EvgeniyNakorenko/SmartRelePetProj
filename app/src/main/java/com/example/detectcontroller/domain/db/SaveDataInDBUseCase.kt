@@ -17,7 +17,11 @@ class SaveDataInDBUseCase(private val database: AppDatabase) {
                 irl = uiState.irl,
                 pwr = uiState.pwr,
                 frq = uiState.frq,
-                tmp = uiState.tmp
+                tmp = uiState.tmp,
+                rmode = uiState.rmode,
+                gomode = uiState.gomode,
+                modes = uiState.modes,
+//                bVis = uiState.bVis,
             )
             database.uiStateDao().insertUiState(uiStateEntity)
         }

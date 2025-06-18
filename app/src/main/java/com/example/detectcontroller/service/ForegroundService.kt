@@ -30,6 +30,7 @@ import com.example.detectcontroller.domain.server.CheckServerEventUseCase
 import com.example.detectcontroller.domain.server.DeleteEventServerUseCase
 import com.example.detectcontroller.domain.server.FetchDataUseCase
 import com.example.detectcontroller.ui.presentation.MainActivity
+import com.example.detectcontroller.ui.presentation.MainViewModel.Companion.B_VIS
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
@@ -274,30 +275,32 @@ class ForegroundService() : Service() {
 
 
                     ////////////////////////////////////////////
-                    repeat(9) {
-                        saveDataInDBUseCase.execute(
-                            UiState(
-                                "timedv: ${Random.nextInt(1, 31)}-06-2024 14:13:12",
-                                "----0",
-                                "----${Random.nextInt(200, 230)}",
-                                "----${Random.nextInt(2, 6)}",
-                                "----${Random.nextInt(800, 1200)}",
-                                "----${Random.nextInt(48, 52)}",
-                                "----${Random.nextInt(20, 31)}"
-                            )
-                        )
-                    }
-                    delay(500)
+//                    repeat(9) {
+//                        saveDataInDBUseCase.execute(
+//                            UiState(
+//                                "timedv: ${Random.nextInt(1, 31)}-06-2024 14:13:12",
+//                                "----0",
+//                                "----${Random.nextInt(200, 230)}",
+//                                "----${Random.nextInt(2, 6)}",
+//                                "----${Random.nextInt(800, 1200)}",
+//                                "----${Random.nextInt(48, 52)}",
+//                                "----${Random.nextInt(20, 31)}"
+//                            )
+//                        )
+//                    }
+                    delay(100)
                     ////////////////////////////////////////////
 
 
                     val fact = loadReq?.let { fetchDataUseCase.execute(it) }
                     fact?.onSuccess { res ->
                         saveDataInDBUseCase.execute(res)
+
                     }?.onFailure { error ->
                         error.printStackTrace()
                     }
-                    delay(30000)
+                    delay(5000)
+                    preferences.edit().putBoolean(B_VIS,true).apply()
                 } catch (e: Exception) {
                     Log.e(TAG, "download error", e)
                 }

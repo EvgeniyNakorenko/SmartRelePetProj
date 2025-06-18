@@ -31,6 +31,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -42,6 +44,7 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import com.example.detectcontroller.R
 import com.example.detectcontroller.ui.presentation.MainViewModel
+import com.example.detectcontroller.ui.presentation.MainViewModel.Companion.B_VIS
 import com.example.detectcontroller.ui.presentation.MainViewModel.Companion.I_TEXT_FIELD_VALUE1
 import com.example.detectcontroller.ui.presentation.MainViewModel.Companion.I_TEXT_FIELD_VALUE2
 import com.example.detectcontroller.ui.presentation.MainViewModel.Companion.P_TEXT_FIELD_VALUE1
@@ -62,7 +65,10 @@ fun SingleDevice(
     navController: NavHostController
 ) {
 
+
     val uiState by mainViewModel.uiState.collectAsState()
+//    var bVis = remember { preferences.getBoolean(B_VIS,true)}
+    val bVis = remember { mutableStateOf(preferences.getBoolean(B_VIS,true)) }
     val releModeGoVisVal by mainViewModel.buttonGoVisib.collectAsState()
     val isCheckedVar by mainViewModel.releModeGO.collectAsState()
     val eventsListState by mainViewModel.eventServerList.collectAsState()
@@ -106,23 +112,30 @@ fun SingleDevice(
                 Text(text = "  $releName", style = MaterialTheme.typography.bodyMedium)
 
                 ToggleIconButton(
-                    isChecked = isCheckedVar,
+                    isChecked = uiState.gomode == "1",
+//                    isChecked = isCheckedVar,
                     onCheckedChange = {
-
-                        if (!isCheckedVar) {
+//                        bVis.value = false
+                        mainViewModel.set_buttonGoVisib(false)
+                        if (uiState.gomode != "1") {
+//                        if (!isCheckedVar) {
                             mainViewModel.createEvent(ScreenEvent.SendServerGoMode(""))
                         } else {
                             mainViewModel.createEvent(ScreenEvent.SendServerStopMode(""))
                         }
+//                        bVis = if (bVis =="stt: 1") "stt: 0" else "stt: 1"
                     },
-                    enabled = releModeGoVisVal && releMode != "Выключено",
+//                    enabled = uiState.bVis
+//                    enabled = bVis.value
+                    enabled = releModeGoVisVal,
                 )
 
                 Column(
                     modifier = Modifier.padding(4.dp),
                     horizontalAlignment = Alignment.Start
                 ) {
-                    Text(text = "режим: $releMode", style = MaterialTheme.typography.bodyMedium)
+                    Text(text = "режим: ${uiState.rmode}", style = MaterialTheme.typography.bodyMedium)
+//                    Text(text = "режим: $releMode", style = MaterialTheme.typography.bodyMedium)
                     Row {
                         Text(text = "состояние: ", style = MaterialTheme.typography.bodyMedium)
                         Text(
@@ -135,7 +148,8 @@ fun SingleDevice(
                 }
 
                 IconButton(
-                    enabled = releModeGoVisVal,
+                    enabled = releModeGoVisVal ,
+//                    enabled = bVis.value,
                     onClick = {
                         mainViewModel.createEvent(
                             ScreenEvent.ShowDialog(
@@ -152,9 +166,7 @@ fun SingleDevice(
                 }
             }
         }
-        if (uiState.error != null) {
-            Text(text = uiState.error!!)
-        } else {
+
             val items = listOf(
                 Item(
                     text = uiState.url,
@@ -633,7 +645,6 @@ fun SingleDevice(
                     }
                 }
             }
-        }
 
     }
 }

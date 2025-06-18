@@ -161,6 +161,7 @@ class MainViewModel(
         const val RELE_MODE5_TIME_OFF = "releMode5TimeOff"
 
         const val RELE_MODE_GO = "releModeGO"
+        const val B_VIS = "B_VIS"
 
         const val I_TEXT_FIELD_VALUE1 = "textFieldValue1I"
         const val I_TEXT_FIELD_VALUE2 = "textFieldValue2I"
@@ -750,6 +751,10 @@ class MainViewModel(
     private suspend fun sendServerGOMode() {
         Thread.sleep(100)
         _buttonGoVisib.value = false
+
+        preferences.edit().putBoolean(B_VIS,false).apply()
+
+//        _uiState.value = _uiState.value.copy(bVis = false)
         val reqDVID = preferences.getString(REG_DVID, "") ?: ""
         val reqTKN = preferences.getString(REG_TKN, "") ?: ""
         val reqTYPEVD = preferences.getString(REG_TYPEDV, "")?.toIntOrNull() ?: 0
@@ -778,6 +783,8 @@ class MainViewModel(
     private suspend fun sendServerStopMode() {
         Thread.sleep(100)
         _buttonGoVisib.value = false
+        preferences.edit().putBoolean(B_VIS,false).apply()
+//        _uiState.value = _uiState.value.copy(bVis = false)
         val reqDVID = preferences.getString(REG_DVID, "") ?: ""
         val reqTKN = preferences.getString(REG_TKN, "") ?: ""
         val reqTYPEVD = preferences.getString(REG_TYPEDV, "")?.toIntOrNull() ?: 0
@@ -1223,12 +1230,27 @@ class MainViewModel(
                 _uiStateList.value = uiStateFromDb
                 if (uiStateFromDb.isNotEmpty()) {
                     _uiState.value = uiStateFromDb.first()
+//                    launch {
+//                        delay(3000)
+//                        _uiState.value = _uiState.value.copy(bVis = true)
+//                    }
+//                    _uiState.value = _uiState.value.copy(bVis = true)
+                    delay(4000)
+                    if (preferences.getBoolean(B_VIS,true)) {
+                        delay(4000)
+                        _buttonGoVisib.value = true
+                    }
+
+//                    delay(1000)
+//                    _buttonGoVisib.value = true
+//                    _uiState.value = _uiState.value.copy(bVis = true)
 //                    if (_releModeValue.last() != "Тумблер" && _releModeValue.last() != "Кнопка" && _releModeValue.last() != "На время" ) {
 //                        _releStt.value = _uiState.value.stt == "stt: 1"
 //                    }
 
+
                 }
-                delay(500)
+
             }
         }
     }

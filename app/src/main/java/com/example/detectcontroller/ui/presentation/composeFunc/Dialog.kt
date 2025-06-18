@@ -1181,6 +1181,9 @@ fun Dialog(
                     }
 
                     SETTINGS_REL -> {
+
+                        mainViewModel.createEvent(ScreenEvent.SendServerStopMode(""))
+
                         if (textFieldValue1.value.isNotBlank()) {
                             mainViewModel.setTextFieldValue1SETREL(textFieldValue1.value)
                         }

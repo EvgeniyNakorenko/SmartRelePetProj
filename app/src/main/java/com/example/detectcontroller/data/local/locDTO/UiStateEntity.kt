@@ -12,5 +12,9 @@ data class UiStateEntity(
     val irl: String,
     val pwr: String,
     val frq: String,
-    val tmp: String
+    val tmp: String,
+    val rmode: String,
+    val gomode: String,
+    val modes: String,
+//    val bVis: Boolean
 )

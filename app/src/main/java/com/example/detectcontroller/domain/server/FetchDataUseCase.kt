@@ -36,7 +36,10 @@ class FetchDataUseCase {
                             irl = "irl: ${jsonObject.getDouble("irl")}",
                             pwr = "pwr: ${jsonObject.getInt("pwr")}",
                             frq = "frq: ${jsonObject.getInt("frq")}",
-                            tmp = "tmp: ${jsonObject.getInt("tmp")}"
+                            tmp = "tmp: ${jsonObject.getInt("tmp")}",
+                            rmode = "${jsonObject.getInt("rmode")}",
+                            gomode = "${jsonObject.getInt("gomode")}",
+                            modes = "${jsonObject.getInt("modes")}",
                         )
                     )
                 } else {
