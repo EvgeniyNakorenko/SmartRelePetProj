@@ -115,7 +115,6 @@ sealed class ScreenEvent {
     data class SendServerGoMode(val value: String) : ScreenEvent()
     data class GetServerSettings(val value: RequestDataDTO) : ScreenEvent()
 
-
     data class SendServerStopMode(val value: String) : ScreenEvent()
 }
 
@@ -149,7 +148,6 @@ class MainViewModel(
     private var gomodeVar: Boolean = false
     private var toastJob: Job? = null
     private val handler = Handler(Looper.getMainLooper())
-
 
     companion object {
         const val REL_SETTINGS = "rel_settings"
@@ -208,7 +206,6 @@ class MainViewModel(
 
 //    var _screenOrientation by mutableStateOf(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
 
-
     private val preferences: SharedPreferences =
         application.getSharedPreferences(REL_SETTINGS, Context.MODE_PRIVATE)
 
@@ -239,7 +236,6 @@ class MainViewModel(
                 delay(3000)
             }
         }
-
     }
 
     private suspend fun loadEvents() {
@@ -268,7 +264,6 @@ class MainViewModel(
     private val _screenState = mutableStateOf(ListState())
     val screenState: State<ListState> = _screenState
 
-
     private val _uiState = MutableStateFlow(UiState())
     val uiState: StateFlow<UiState> = _uiState
 
@@ -280,7 +275,6 @@ class MainViewModel(
     // Новый StateFlow для StatusEventServerDTO
     private val _eventServerList = MutableStateFlow<List<StatusEventServerDTO>>(emptyList())
     val eventServerList: StateFlow<List<StatusEventServerDTO>> = _eventServerList
-
 
     private val _saveRegDataWIFI = mutableStateListOf<RequestDataDTO>(
         RequestDataDTO(
@@ -952,7 +946,7 @@ class MainViewModel(
                     Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                 }
             } catch (e: CancellationException) {
-                // Корректная отмена - ничего не делаем
+
             } catch (e: Exception) {
                 Log.e("Toast", "Delay toast failed: ${e.message}")
             }
@@ -1104,7 +1098,7 @@ class MainViewModel(
                         sendServerStopMode()
                         _releModeGO.value = false
                         preferences.edit().putBoolean(RELE_MODE_GO, false).apply()
-                        _buttonGoVisib.value = true
+//                        _buttonGoVisib.value = true
 
 
                     }
@@ -1112,14 +1106,14 @@ class MainViewModel(
                     "1" -> {
                         _releModeGO.value = true
                         preferences.edit().putBoolean(RELE_MODE_GO, true).apply()
-                        _buttonGoVisib.value = true
+//                        _buttonGoVisib.value = true
                     }
 
                     "3" -> {
                         sendServerStopMode()
                         _releModeGO.value = false
                         preferences.edit().putBoolean(RELE_MODE_GO, false).apply()
-                        _buttonGoVisib.value = true
+//                        _buttonGoVisib.value = true
 
 
 
@@ -1128,7 +1122,7 @@ class MainViewModel(
                     "6" -> {
                         _releModeGO.value = true
                         preferences.edit().putBoolean(RELE_MODE_GO, true).apply()
-                        _buttonGoVisib.value = true
+//                        _buttonGoVisib.value = true
                     }
                 }
                 del.onSuccess { res ->
@@ -1223,37 +1217,52 @@ class MainViewModel(
 
     private fun loadDataFromDatabase() {
         viewModelScope.launch {
+            var counter = 0
             while (true) {
-                ////////////////
-
                 val uiStateFromDb = loadDataFromDBUseCase.execute()
                 _uiStateList.value = uiStateFromDb
-                if (uiStateFromDb.isNotEmpty()) {
-                    _uiState.value = uiStateFromDb.first()
-//                    launch {
-//                        delay(3000)
-//                        _uiState.value = _uiState.value.copy(bVis = true)
-//                    }
-//                    _uiState.value = _uiState.value.copy(bVis = true)
-                    delay(4000)
-                    if (preferences.getBoolean(B_VIS,true)) {
-                        delay(4000)
+
+                uiStateFromDb.firstOrNull()?.let { newState ->
+                    if (_uiState.value != newState) {
+                        _uiState.value = newState
+                        delay(2000)
                         _buttonGoVisib.value = true
+                        counter = 0
+                    } else {
+                        counter++
+                        if (counter % 5 == 0) showToast("Ошибка сервера")
+                        delay(2000)
                     }
-
-//                    delay(1000)
-//                    _buttonGoVisib.value = true
-//                    _uiState.value = _uiState.value.copy(bVis = true)
-//                    if (_releModeValue.last() != "Тумблер" && _releModeValue.last() != "Кнопка" && _releModeValue.last() != "На время" ) {
-//                        _releStt.value = _uiState.value.stt == "stt: 1"
-//                    }
-
-
-                }
-
+                } ?: delay(2000)
             }
         }
     }
+
+
+//    private fun loadDataFromDatabase() {
+//        viewModelScope.launch {
+//            var counter = 0
+//            while (true) {
+//                ////////////////
+//                val uiStateFromDb = loadDataFromDBUseCase.execute()
+//                _uiStateList.value = uiStateFromDb
+//                if (uiStateFromDb.isNotEmpty()) {
+//                    if (_uiState.value != uiStateFromDb.first()){
+//                        _uiState.value = uiStateFromDb.first()
+//                        delay(2000)
+//                        _buttonGoVisib.value = true
+//                        counter = 0
+//                    }else{
+//                        counter ++
+//                        if (counter % 5 == 0) showToast("Ошибка сервера")
+//                        delay(2000)
+//                    }
+//                }else{
+//                    delay(2000)
+//                }
+//            }
+//        }
+//    }
 
     private fun loadEventServerFromDB() {
         viewModelScope.launch {

@@ -10,7 +10,7 @@ import androidx.compose.ui.Modifier
 fun ToggleIconButton(
 
     isChecked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
+    onCheckedChange:  (Boolean) -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     thumbContent: @Composable (() -> Unit)? = null

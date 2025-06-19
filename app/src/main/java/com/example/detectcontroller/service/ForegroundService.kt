@@ -18,8 +18,6 @@ import com.example.detectcontroller.data.local.locDTO.LastEventsServerEntity
 import com.example.detectcontroller.data.local.locDTO.RegServerEntity
 import com.example.detectcontroller.data.remote.remDTO.DeleteEventDTO
 import com.example.detectcontroller.data.remote.remDTO.RequestDataDTO
-import com.example.detectcontroller.data.remote.remDTO.StatusEventServerDTO
-import com.example.detectcontroller.data.remote.remDTO.UiState
 import com.example.detectcontroller.domain.db.GetAllRegServerFromDBUseCase
 import com.example.detectcontroller.domain.db.GetOneLastEventServerFromDBUseCase
 import com.example.detectcontroller.domain.db.InsertLastEventServerInDBUseCase
@@ -30,7 +28,6 @@ import com.example.detectcontroller.domain.server.CheckServerEventUseCase
 import com.example.detectcontroller.domain.server.DeleteEventServerUseCase
 import com.example.detectcontroller.domain.server.FetchDataUseCase
 import com.example.detectcontroller.ui.presentation.MainActivity
-import com.example.detectcontroller.ui.presentation.MainViewModel.Companion.B_VIS
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
@@ -250,6 +247,7 @@ class ForegroundService() : Service() {
 
             var regData: RegServerEntity?
             regData = null
+            var delay = 4000L
             ////////////////////////////////////////////
             while (isActive) {
                 delay(10)
@@ -291,16 +289,16 @@ class ForegroundService() : Service() {
                     delay(100)
                     ////////////////////////////////////////////
 
-
-                    val fact = loadReq?.let { fetchDataUseCase.execute(it) }
-                    fact?.onSuccess { res ->
+                    val dataFromServer = loadReq?.let { fetchDataUseCase.execute(it) }
+                    dataFromServer?.onSuccess { res ->
                         saveDataInDBUseCase.execute(res)
 
                     }?.onFailure { error ->
                         error.printStackTrace()
                     }
-                    delay(5000)
-                    preferences.edit().putBoolean(B_VIS,true).apply()
+                    delay(delay)
+//                    delay *= 2
+//                    preferences.edit().putBoolean(B_VIS,true).apply()
                 } catch (e: Exception) {
                     Log.e(TAG, "download error", e)
                 }
