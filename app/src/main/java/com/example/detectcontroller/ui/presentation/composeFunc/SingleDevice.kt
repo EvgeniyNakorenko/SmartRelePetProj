@@ -117,11 +117,23 @@ fun SingleDevice(
                     isChecked = uiState.modes == "1" || uiState.modes == "6",
                     onCheckedChange = {
                         mainViewModel.set_buttonGoVisib(false)
-                        if (uiState.gomode != "1") {
-                            mainViewModel.createEvent(ScreenEvent.SendServerGoMode(""))
-                        } else {
-                            mainViewModel.createEvent(ScreenEvent.SendServerStopMode(""))
+                        when(uiState.modes){
+                            "1" -> mainViewModel.createEvent(ScreenEvent.SendServerStopMode(""))
+                            "0" -> {
+                                mainViewModel.createEvent(ScreenEvent.SendServerStopMode(""))
+                                mainViewModel.createEvent(ScreenEvent.SendServerGoMode(""))
+                            }
+                            "3" -> {
+                                mainViewModel.createEvent(ScreenEvent.SendServerStopMode(""))
+                                mainViewModel.createEvent(ScreenEvent.SendServerGoMode(""))
+                            }
+                            "6" -> mainViewModel.createEvent(ScreenEvent.SendServerStopMode(""))
                         }
+//                        if (uiState.modes != "1" && uiState.modes != "6") {
+//                            mainViewModel.createEvent(ScreenEvent.SendServerGoMode(""))
+//                        } else {
+//                            mainViewModel.createEvent(ScreenEvent.SendServerStopMode(""))
+//                        }
                     },
                     enabled = releModeGoVisVal,
                 )

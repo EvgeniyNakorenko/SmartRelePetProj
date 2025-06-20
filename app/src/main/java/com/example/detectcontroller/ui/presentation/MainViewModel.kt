@@ -5,16 +5,13 @@ import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
-import android.content.pm.ActivityInfo
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.runtime.State
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -746,7 +743,7 @@ class MainViewModel(
         Thread.sleep(100)
         _buttonGoVisib.value = false
 
-        preferences.edit().putBoolean(B_VIS,false).apply()
+        preferences.edit().putBoolean(B_VIS, false).apply()
 
 //        _uiState.value = _uiState.value.copy(bVis = false)
         val reqDVID = preferences.getString(REG_DVID, "") ?: ""
@@ -754,15 +751,45 @@ class MainViewModel(
         val reqTYPEVD = preferences.getString(REG_TYPEDV, "")?.toIntOrNull() ?: 0
         val reqNUM = preferences.getString(REG_NUM, "")?.toIntOrNull() ?: 0
 
-        val sendServerGoMode = sendServerGoModeUseCase.execute(
-            RequestDataDTO(reqDVID, reqTKN, reqTYPEVD, reqNUM, "gomode")
+        val sendServerStop = sendServerGoModeUseCase.execute(
+            RequestDataDTO(reqDVID, reqTKN, reqTYPEVD, reqNUM, "stop")
         )
+
         showToast("Команда отправлена на сервер")
-        sendServerGoMode.onSuccess { result ->
+        sendServerStop.onSuccess { result ->
             if (result.status == 0) {
 
-                showToastDelay("Ожидаем ответ на устройство")
-                println("gomode отправлен на сервер")
+                viewModelScope.launch {
+                    while (true){
+                        var gomodeZero = ""
+                        gomodeZero = _uiState.value.gomode
+                        if (gomodeZero == "0") break
+                        delay(1000)
+                    }
+
+                    val sendServerGoMode = sendServerGoModeUseCase.execute(
+                        RequestDataDTO(reqDVID, reqTKN, reqTYPEVD, reqNUM, "gomode")
+                    )
+                    sendServerGoMode.onSuccess { result ->
+                        if (result.status == 0) {
+
+                            showToastDelay("Ожидаем ответ на устройство")
+                            println("stop отправлен на сервер")
+                        } else {
+                            println("stop не отправлен на сервер")
+                        }
+                    }.onFailure { e ->
+                        e.printStackTrace()
+                        showToast("stop не отправлен на сервер")
+//            set_buttonGoVisib(true)
+                    }
+
+                }
+//                if (_uiState.value.gomode == "0")
+
+
+//                showToastDelay("Ожидаем ответ на устройство")
+//                println("gomode отправлен на сервер")
             } else {
                 println("gomode не отправлен на сервер")
             }
@@ -777,7 +804,7 @@ class MainViewModel(
     private suspend fun sendServerStopMode() {
         Thread.sleep(100)
         _buttonGoVisib.value = false
-        preferences.edit().putBoolean(B_VIS,false).apply()
+        preferences.edit().putBoolean(B_VIS, false).apply()
 //        _uiState.value = _uiState.value.copy(bVis = false)
         val reqDVID = preferences.getString(REG_DVID, "") ?: ""
         val reqTKN = preferences.getString(REG_TKN, "") ?: ""
@@ -802,7 +829,6 @@ class MainViewModel(
 //            set_buttonGoVisib(true)
         }
     }
-
 
 
     private fun saveShPrefSettingsRel() {
@@ -1114,7 +1140,6 @@ class MainViewModel(
                         _releModeGO.value = false
                         preferences.edit().putBoolean(RELE_MODE_GO, false).apply()
 //                        _buttonGoVisib.value = true
-
 
 
                     }
