@@ -24,10 +24,12 @@ import com.example.detectcontroller.data.remote.remDTO.RequestDataDTO
 import com.example.detectcontroller.domain.db.DeleteLastEventServerByIdFromDBUseCase
 import com.example.detectcontroller.domain.db.GetAllRegServerFromDBUseCase
 import com.example.detectcontroller.domain.db.GetOneLastEventServerFromDBUseCase
+import com.example.detectcontroller.domain.db.InsertLastEventServerInDBUseCase
 import com.example.detectcontroller.domain.db.InsertRegServerInDBUseCase
 import com.example.detectcontroller.domain.db.LoadDataFromDBUseCase
 import com.example.detectcontroller.domain.db.LoadEventServerFromDBUseCase
 import com.example.detectcontroller.domain.db.LoadLastEventServerFromDBUseCase
+import com.example.detectcontroller.domain.db.SaveEventServerInDBUseCase
 import com.example.detectcontroller.service.ForegroundService
 import com.example.detectcontroller.service.ForegroundService.Companion.TAG
 import com.example.detectcontroller.ui.presentation.composeFunc.DialogState.INVISIBLE
@@ -69,6 +71,8 @@ class MainActivity : ComponentActivity() {
         val getOneLastEventServerFromDBUseCase = GetOneLastEventServerFromDBUseCase(database)
         val insertRegServerInDBUseCase = InsertRegServerInDBUseCase(database)
         getAllRegServerFromDBUseCase = GetAllRegServerFromDBUseCase(database)
+        val saveEventServerInDBUseCase = SaveEventServerInDBUseCase(database)
+
 
         val viewModelFactory =
             MainViewModelFactory(
@@ -79,10 +83,12 @@ class MainActivity : ComponentActivity() {
                 loadLastEventServerFromDBUseCase,
                 deleteLastEventServerByIdFromDBUseCase,
                 getOneLastEventServerFromDBUseCase,
-                insertRegServerInDBUseCase
+                insertRegServerInDBUseCase,
+                saveEventServerInDBUseCase
+
             )
 
-         viewModel = ViewModelProvider(this, viewModelFactory).get(MainViewModel::class.java)
+        viewModel = ViewModelProvider(this, viewModelFactory).get(MainViewModel::class.java)
 
         startBackgroundTask(viewModel)
 
@@ -124,7 +130,7 @@ class MainActivity : ComponentActivity() {
                 withContext(Dispatchers.IO) {
 
                     if (regData != null) {
-                        if (viewModel.screenState.value.dialogState == INVISIBLE){
+                        if (viewModel.screenState.value.dialogState == INVISIBLE) {
                             viewModel.createEvent(
                                 ScreenEvent.GetServerSettings(
                                     RequestDataDTO(

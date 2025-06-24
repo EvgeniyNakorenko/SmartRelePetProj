@@ -271,7 +271,6 @@ class ForegroundService() : Service() {
                         )
                     }
 
-
                     ////////////////////////////////////////////
 //                    repeat(9) {
 //                        saveDataInDBUseCase.execute(

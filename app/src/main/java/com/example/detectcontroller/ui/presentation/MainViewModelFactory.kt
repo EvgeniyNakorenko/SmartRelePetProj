@@ -7,10 +7,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.detectcontroller.domain.db.DeleteLastEventServerByIdFromDBUseCase
 import com.example.detectcontroller.domain.db.GetOneLastEventServerFromDBUseCase
+import com.example.detectcontroller.domain.db.InsertLastEventServerInDBUseCase
 import com.example.detectcontroller.domain.db.InsertRegServerInDBUseCase
 import com.example.detectcontroller.domain.db.LoadDataFromDBUseCase
 import com.example.detectcontroller.domain.db.LoadEventServerFromDBUseCase
 import com.example.detectcontroller.domain.db.LoadLastEventServerFromDBUseCase
+import com.example.detectcontroller.domain.db.SaveEventServerInDBUseCase
 
 class MainViewModelFactory(
     private val application: Application,
@@ -21,6 +23,7 @@ class MainViewModelFactory(
     private val deleteLastEventServerByIdFromDBUseCase: DeleteLastEventServerByIdFromDBUseCase,
     private val getOneLastEventServerFromDBUseCase: GetOneLastEventServerFromDBUseCase,
     private val insertRegServerInDBUseCase: InsertRegServerInDBUseCase,
+    private val saveEventServerInDBUseCase: SaveEventServerInDBUseCase,
 
     ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -33,7 +36,8 @@ class MainViewModelFactory(
                 loadLastEventServerFromDBUseCase,
                 deleteLastEventServerByIdFromDBUseCase,
                 getOneLastEventServerFromDBUseCase,
-                insertRegServerInDBUseCase
+                insertRegServerInDBUseCase,
+                saveEventServerInDBUseCase
             ) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")

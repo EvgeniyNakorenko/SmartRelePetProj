@@ -28,6 +28,17 @@ class FetchDataUseCase {
                     val jsonResponse = response.body()?.string()
                     val jsonObject = JSONObject(jsonResponse.toString())
 
+                    if (jsonObject.has("error")) {
+                        val errorCode = jsonObject.getInt("error")
+                        val errorMessage = when (errorCode) {
+                            1 -> "error 1 Device not registered error 1"
+                            2 -> "error 2 JSON syntax"
+                            3 -> "error 3 Invalid device type, channel number, or command parameter"
+                            else -> "Unknown error"
+                        }
+                        return@withContext Result.failure(Exception("Error $errorCode: $errorMessage"))
+                    }
+
                     Result.success(
                         UiState(
                             timedv = "timedv: ${jsonObject.getString("timedv")}",

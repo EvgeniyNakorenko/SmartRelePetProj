@@ -15,6 +15,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.detectcontroller.data.local.locDTO.LastEventsServerEntity
 import com.example.detectcontroller.data.local.locDTO.RegServerEntity
 import com.example.detectcontroller.data.remote.remDTO.DeleteEventDTO
 import com.example.detectcontroller.data.remote.remDTO.GetSettingsDTOrmode1
@@ -37,9 +38,11 @@ import com.example.detectcontroller.domain.db.InsertRegServerInDBUseCase
 import com.example.detectcontroller.domain.db.LoadDataFromDBUseCase
 import com.example.detectcontroller.domain.db.LoadEventServerFromDBUseCase
 import com.example.detectcontroller.domain.db.LoadLastEventServerFromDBUseCase
+import com.example.detectcontroller.domain.db.SaveEventServerInDBUseCase
 import com.example.detectcontroller.domain.registration.RegGetDataWIFIUseCase
 import com.example.detectcontroller.domain.registration.RegSendDataWIFIUseCase
 import com.example.detectcontroller.domain.server.DeleteEventServerUseCase
+import com.example.detectcontroller.domain.server.FetchDataUseCase
 import com.example.detectcontroller.domain.server.GetServerSettingsUseCase
 import com.example.detectcontroller.domain.server.SendServerGoModeUseCase
 import com.example.detectcontroller.domain.server.SendServerSettingsMode012UseCase
@@ -57,6 +60,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import kotlin.coroutines.cancellation.CancellationException
 
 data class ListState(
@@ -124,15 +130,19 @@ class MainViewModel(
     private val deleteLastEventServerByIdFromDBUseCase: DeleteLastEventServerByIdFromDBUseCase,
     private val getOneLastEventServerFromDBUseCase: GetOneLastEventServerFromDBUseCase,
 //    private val getRegServerByDvidFromDBUseCase: GetRegServerByDvidFromDBUseCase,
-//    private val insertLastEventServerInDBUseCase: InsertLastEventServerInDBUseCase,
     private val insertRegServerInDBUseCase: InsertRegServerInDBUseCase,
-) : ViewModel() {
+    private val saveEventServerInDBUseCase: SaveEventServerInDBUseCase,
+
+    ) : ViewModel() {
     @SuppressLint("StaticFieldLeak")
     private val contextIn = context
     private val regGetDataWIFIUseCase = RegGetDataWIFIUseCase()
     private val regSendDataWIFIUseCase = RegSendDataWIFIUseCase()
     private val deleteEventServerUseCase = DeleteEventServerUseCase()
     private val sendSettingsServerUseCase = SendSettingsServerUseCase()
+
+    private val fetchDataUseCase = FetchDataUseCase()
+
 
     private val sendServerSettingsMode3UseCase = SendServerSettingsMode3UseCase()
     private val sendServerSettingsMode4UseCase = SendServerSettingsMode4UseCase()
@@ -760,7 +770,7 @@ class MainViewModel(
             if (result.status == 0) {
 
                 viewModelScope.launch {
-                    while (true){
+                    while (true) {
                         var gomodeZero = ""
                         gomodeZero = _uiState.value.gomode
                         if (gomodeZero == "0") break
@@ -1239,23 +1249,84 @@ class MainViewModel(
         }
     }
 
-
     private fun loadDataFromDatabase() {
         viewModelScope.launch {
-            var counter = 0
+            var counterBase = 0
+            var counterServ = 0
+            var counterErr = 0
             while (true) {
                 val uiStateFromDb = loadDataFromDBUseCase.execute()
                 _uiStateList.value = uiStateFromDb
 
                 uiStateFromDb.firstOrNull()?.let { newState ->
-                    if (_uiState.value != newState) {
+                    if (_uiState.value.timedv != newState.timedv) {
                         _uiState.value = newState
                         delay(2000)
                         _buttonGoVisib.value = true
-                        counter = 0
+                        counterBase = 0
+                        counterServ = 0
+                        counterErr = 0
                     } else {
-                        counter++
-                        if (counter % 5 == 0) showToast("Ошибка сервера")
+                        counterBase++
+                        if (counterBase % 5 == 0) {
+                            val reqDVID = preferences.getString(REG_DVID, "") ?: ""
+                            val reqTKN = preferences.getString(REG_TKN, "") ?: ""
+                            val reqTYPEVDString = preferences.getString(REG_TYPEDV, "")
+                            val reqTYPEVD = if (!reqTYPEVDString.isNullOrEmpty()) {
+                                reqTYPEVDString.toInt()
+                            } else 0
+
+                            val reqNUMString = preferences.getString(REG_NUM, "")
+                            val reqNUM = if (!reqNUMString.isNullOrEmpty()) {
+                                reqNUMString.toInt()
+                            } else 4
+
+                            val loadReq =
+                                RequestDataDTO(
+                                    reqDVID,
+                                    reqTKN,
+                                    reqTYPEVD,
+                                    reqNUM,
+                                    "rs",
+//                                    event?.id ?: 0
+                                )
+
+                            val dataFromServer = loadReq?.let {
+                                fetchDataUseCase.execute(it)
+                            }
+                            if (dataFromServer?.isFailure == true) {
+                                if (counterErr == 0) {
+                                    counterServ++
+                                    if (counterServ == 3) {
+                                        counterErr = 1
+                                        dataFromServer.onFailure { error ->
+                                            error.printStackTrace()
+                                            showToast("Ошибка сервера")
+                                            showToast("${error.message}")
+
+                                            val currentInstant = Instant.now()
+                                            val moscowTime =
+                                                currentInstant.atZone(ZoneId.of("Europe/Moscow"))
+                                            val formatter =
+                                                DateTimeFormatter.ofPattern("dd.MM.yyyy, HH:mm:ss")
+                                            val formattedTime = moscowTime.format(formatter)
+                                            saveEventServerInDBUseCase.execute(
+                                                StatusEventServerDTO(
+                                                    id = 1,
+                                                    timeev = "$formattedTime",
+                                                    rstate = "-1",
+                                                    value = "-1",
+                                                    name = "${error.message}"
+                                                )
+                                            )
+                                        }
+                                        counterServ = 0
+                                    }
+                                }
+
+                            } else counterErr = 0
+                            _buttonGoVisib.value = true
+                        }
                         delay(2000)
                     }
                 } ?: delay(2000)
