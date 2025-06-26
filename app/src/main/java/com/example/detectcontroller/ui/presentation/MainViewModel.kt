@@ -59,6 +59,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneId
@@ -770,7 +771,7 @@ class MainViewModel(
             if (result.status == 0) {
 
                 viewModelScope.launch {
-                    while (true) {
+                    while (isActive) {
                         var gomodeZero = ""
                         gomodeZero = _uiState.value.gomode
                         if (gomodeZero == "0") break
@@ -1250,11 +1251,11 @@ class MainViewModel(
     }
 
     private fun loadDataFromDatabase() {
-        viewModelScope.launch {
+          viewModelScope.launch {
             var counterBase = 0
             var counterServ = 0
             var counterErr = 0
-            while (true) {
+            while (isActive) {
                 val uiStateFromDb = loadDataFromDBUseCase.execute()
                 _uiStateList.value = uiStateFromDb
 
@@ -1287,7 +1288,7 @@ class MainViewModel(
                                     reqTKN,
                                     reqTYPEVD,
                                     reqNUM,
-                                    "rs",
+                                    "rss",
 //                                    event?.id ?: 0
                                 )
 
@@ -1297,7 +1298,7 @@ class MainViewModel(
                             if (dataFromServer?.isFailure == true) {
                                 if (counterErr == 0) {
                                     counterServ++
-                                    if (counterServ == 3) {
+                                    if (counterServ == 4) {
                                         counterErr = 1
                                         dataFromServer.onFailure { error ->
                                             error.printStackTrace()
@@ -1334,31 +1335,6 @@ class MainViewModel(
         }
     }
 
-
-//    private fun loadDataFromDatabase() {
-//        viewModelScope.launch {
-//            var counter = 0
-//            while (true) {
-//                ////////////////
-//                val uiStateFromDb = loadDataFromDBUseCase.execute()
-//                _uiStateList.value = uiStateFromDb
-//                if (uiStateFromDb.isNotEmpty()) {
-//                    if (_uiState.value != uiStateFromDb.first()){
-//                        _uiState.value = uiStateFromDb.first()
-//                        delay(2000)
-//                        _buttonGoVisib.value = true
-//                        counter = 0
-//                    }else{
-//                        counter ++
-//                        if (counter % 5 == 0) showToast("Ошибка сервера")
-//                        delay(2000)
-//                    }
-//                }else{
-//                    delay(2000)
-//                }
-//            }
-//        }
-//    }
 
     private fun loadEventServerFromDB() {
         viewModelScope.launch {

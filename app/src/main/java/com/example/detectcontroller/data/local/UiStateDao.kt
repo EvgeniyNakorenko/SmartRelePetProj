@@ -46,4 +46,9 @@ interface UiStateDao {
 
     @Query("DELETE FROM event_server WHERE id = :id")
     suspend fun deleteLastEventDBById(id: Int)
+    
+    //errors
+//    @Insert(onConflict = OnConflictStrategy.REPLACE)
+//    suspend fun insertEventServer(eventServerEntity: EventServerEntity)
+//
 }
