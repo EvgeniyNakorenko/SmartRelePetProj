@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import com.example.detectcontroller.data.local.locDTO.ErrorEntity
 import com.example.detectcontroller.data.local.locDTO.EventServerEntity
 import com.example.detectcontroller.data.local.locDTO.LastEventsServerEntity
 import com.example.detectcontroller.data.local.locDTO.RegServerEntity
@@ -36,7 +37,7 @@ interface UiStateDao {
     suspend fun getRegServerByDvid(dvid: String): RegServerEntity?
 
     @Query("SELECT * FROM reg_server_data ")
-    suspend fun getAllRegServer(): List<RegServerEntity?>
+    suspend fun getAllRegServer(): List<RegServerEntity>
 
     @Query("SELECT * FROM last_event_server WHERE id = :id")
     suspend fun getOneLastEventServer(id: Int): LastEventsServerEntity
@@ -46,6 +47,15 @@ interface UiStateDao {
 
     @Query("DELETE FROM event_server WHERE id = :id")
     suspend fun deleteLastEventDBById(id: Int)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(error: ErrorEntity)
+
+    @Query("SELECT * FROM ErrorEntity ORDER BY id DESC LIMIT 20")
+    fun getAllErrors(): List<ErrorEntity>
+
+    @Query("DELETE FROM ErrorEntity WHERE timestamp < :threshold")
+    suspend fun clearOldErrors(threshold: Long)
     
     //errors
 //    @Insert(onConflict = OnConflictStrategy.REPLACE)

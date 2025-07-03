@@ -14,27 +14,18 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.compose.material3.MaterialTheme
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.ViewModelProvider
-import com.example.detectcontroller.data.local.AppDatabase
-import com.example.detectcontroller.data.local.DBRepositoryImpl
+import androidx.lifecycle.lifecycleScope
 import com.example.detectcontroller.data.local.locDTO.RegServerEntity
 import com.example.detectcontroller.data.remote.remDTO.RequestDataDTO
-import com.example.detectcontroller.domain.db.DeleteLastEventServerByIdFromDBUseCase
 import com.example.detectcontroller.domain.db.GetAllRegServerFromDBUseCase
-import com.example.detectcontroller.domain.db.GetOneLastEventServerFromDBUseCase
-import com.example.detectcontroller.domain.db.InsertLastEventServerInDBUseCase
-import com.example.detectcontroller.domain.db.InsertRegServerInDBUseCase
-import com.example.detectcontroller.domain.db.LoadDataFromDBUseCase
-import com.example.detectcontroller.domain.db.LoadEventServerFromDBUseCase
-import com.example.detectcontroller.domain.db.LoadLastEventServerFromDBUseCase
-import com.example.detectcontroller.domain.db.SaveEventServerInDBUseCase
 import com.example.detectcontroller.service.ForegroundService
 import com.example.detectcontroller.service.ForegroundService.Companion.TAG
 import com.example.detectcontroller.ui.presentation.composeFunc.DialogState.INVISIBLE
 import com.example.detectcontroller.ui.presentation.nav.MainScreen
-import kotlinx.coroutines.CoroutineScope
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -42,15 +33,18 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    private val viewModelJob = Job()
+//    private val viewModelJob = Job()
     private var checkJob: Job? = null
-    private val uiScope = CoroutineScope(Dispatchers.Main + viewModelJob)
+//    private val uiScope = CoroutineScope(Dispatchers.Main + viewModelJob)
     private lateinit var preferences: SharedPreferences
-    private lateinit var viewModel: MainViewModel
+//    private lateinit var viewModel: MainViewModel
+
+    private val viewModel: MainViewModel by viewModels()
 //    private  var gomodeVar : Boolean = false
 
-    private lateinit var getAllRegServerFromDBUseCase: GetAllRegServerFromDBUseCase
+//    private lateinit var getAllRegServerFromDBUseCase: GetAllRegServerFromDBUseCase
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,36 +53,6 @@ class MainActivity : ComponentActivity() {
         ForegroundService.startService(this)
 
         askNotificationPermission()
-
-        val database = AppDatabase.getDatabase(this)
-        val repository = DBRepositoryImpl(database)
-        val loadDataFromDBUseCase = LoadDataFromDBUseCase(repository)
-//        val loadDataFromDBUseCase = LoadDataFromDBUseCase(database)
-        val loadEventServerFromDBUseCase = LoadEventServerFromDBUseCase(database)
-        val loadLastEventServerFromDBUseCase = LoadLastEventServerFromDBUseCase(database)
-        val deleteLastEventServerByIdFromDBUseCase =
-            DeleteLastEventServerByIdFromDBUseCase(database)
-        val getOneLastEventServerFromDBUseCase = GetOneLastEventServerFromDBUseCase(database)
-        val insertRegServerInDBUseCase = InsertRegServerInDBUseCase(database)
-        getAllRegServerFromDBUseCase = GetAllRegServerFromDBUseCase(database)
-        val saveEventServerInDBUseCase = SaveEventServerInDBUseCase(database)
-
-
-        val viewModelFactory =
-            MainViewModelFactory(
-                this.application,
-                this,
-                loadDataFromDBUseCase,
-                loadEventServerFromDBUseCase,
-                loadLastEventServerFromDBUseCase,
-                deleteLastEventServerByIdFromDBUseCase,
-                getOneLastEventServerFromDBUseCase,
-                insertRegServerInDBUseCase,
-                saveEventServerInDBUseCase
-
-            )
-
-        viewModel = ViewModelProvider(this, viewModelFactory).get(MainViewModel::class.java)
 
         startBackgroundTask(viewModel)
 
@@ -106,23 +70,24 @@ class MainActivity : ComponentActivity() {
 
     override fun onPause() {
         super.onPause()
-        checkJob?.cancel()
+//        checkJob?.cancel()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        viewModelJob.cancel()
+//        viewModelJob.cancel()
     }
 
-
     private fun startBackgroundTask(viewModel: MainViewModel) {
-        uiScope.launch {
+        lifecycleScope.launch {
             while (isActive) {
 
                 var regData: RegServerEntity?
                 regData = null
                 try {
-                    regData = getAllRegServerFromDBUseCase.execute().lastOrNull()
+                    viewModel.createEvent(ScreenEvent.GetAllRegServerFromDB(""))
+                    regData = viewModel.regState.value.lastOrNull()
+//                    regData = getAllRegServerFromDBUseCase.execute().lastOrNull()
                 } catch (e: Exception) {
                     Log.e(TAG, "download reg data error", e)
                 }

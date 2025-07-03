@@ -1,9 +1,10 @@
 package com.example.detectcontroller.data.local
 
-import android.content.Context
 import androidx.room.Database
-import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
+import com.example.detectcontroller.data.local.locDTO.ErrorEntity
 import com.example.detectcontroller.data.local.locDTO.EventServerEntity
 import com.example.detectcontroller.data.local.locDTO.LastEventsServerEntity
 import com.example.detectcontroller.data.local.locDTO.RegServerEntity
@@ -14,10 +15,14 @@ import com.example.detectcontroller.data.local.locDTO.UiStateEntity
         UiStateEntity::class,
         EventServerEntity::class,
         RegServerEntity::class,
-        LastEventsServerEntity::class
+        LastEventsServerEntity::class,
+        ErrorEntity::class
     ],
-    version = 3
+    version = 4,
+    exportSchema = true
 )
+
+//@TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun uiStateDao(): UiStateDao
 
@@ -25,16 +30,49 @@ abstract class AppDatabase : RoomDatabase() {
         @Volatile
         private var INSTANCE: AppDatabase? = null
 
-        fun getDatabase(context: Context): AppDatabase {
-            return INSTANCE ?: synchronized(this) {
-                val instance = Room.databaseBuilder(
-                    context.applicationContext,
-                    AppDatabase::class.java,
-                    "app_database"
-                ).build()
-                INSTANCE = instance
-                instance
+        // Исправленная миграция с версии 3 на 4
+        val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("""
+                    CREATE TABLE IF NOT EXISTS `ErrorEntity` (
+                        `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                        `errorCode` INTEGER NOT NULL,
+                        `errorMessage` TEXT NOT NULL,
+                        `timestamp` INTEGER NOT NULL,
+                        `deviceId` TEXT
+                    )
+                """.trimIndent())
             }
         }
     }
 }
+
+//@Database(
+//    entities = [
+//        UiStateEntity::class,
+//        EventServerEntity::class,
+//        RegServerEntity::class,
+//        LastEventsServerEntity::class
+//    ],
+//    version = 3
+//)
+//abstract class AppDatabase : RoomDatabase() {
+//    abstract fun uiStateDao(): UiStateDao
+//
+//    companion object {
+//        @Volatile
+//        private var INSTANCE: AppDatabase? = null
+//
+//        fun getDatabase(context: Context): AppDatabase {
+//            return INSTANCE ?: synchronized(this) {
+//                val instance = Room.databaseBuilder(
+//                    context.applicationContext,
+//                    AppDatabase::class.java,
+//                    "app_database"
+//                ).build()
+//                INSTANCE = instance
+//                instance
+//            }
+//        }
+//    }
+//}

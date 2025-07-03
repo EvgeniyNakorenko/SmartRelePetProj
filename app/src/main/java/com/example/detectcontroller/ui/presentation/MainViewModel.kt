@@ -15,7 +15,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.detectcontroller.data.local.locDTO.LastEventsServerEntity
 import com.example.detectcontroller.data.local.locDTO.RegServerEntity
 import com.example.detectcontroller.data.remote.remDTO.DeleteEventDTO
 import com.example.detectcontroller.data.remote.remDTO.GetSettingsDTOrmode1
@@ -32,13 +31,7 @@ import com.example.detectcontroller.data.remote.remDTO.SendServerSettingsMode5DT
 import com.example.detectcontroller.data.remote.remDTO.SendSettingsDTO
 import com.example.detectcontroller.data.remote.remDTO.StatusEventServerDTO
 import com.example.detectcontroller.data.remote.remDTO.UiState
-import com.example.detectcontroller.domain.db.DeleteLastEventServerByIdFromDBUseCase
-import com.example.detectcontroller.domain.db.GetOneLastEventServerFromDBUseCase
-import com.example.detectcontroller.domain.db.InsertRegServerInDBUseCase
-import com.example.detectcontroller.domain.db.LoadDataFromDBUseCase
-import com.example.detectcontroller.domain.db.LoadEventServerFromDBUseCase
-import com.example.detectcontroller.domain.db.LoadLastEventServerFromDBUseCase
-import com.example.detectcontroller.domain.db.SaveEventServerInDBUseCase
+import com.example.detectcontroller.domain.DBRepository
 import com.example.detectcontroller.domain.registration.RegGetDataWIFIUseCase
 import com.example.detectcontroller.domain.registration.RegSendDataWIFIUseCase
 import com.example.detectcontroller.domain.server.DeleteEventServerUseCase
@@ -53,6 +46,9 @@ import com.example.detectcontroller.domain.server.SendSettingsServerUseCase
 import com.example.detectcontroller.ui.presentation.composeFunc.DialogState
 import com.example.detectcontroller.ui.presentation.composeFunc.DialogState.INVISIBLE
 import com.example.detectcontroller.ui.presentation.composeFunc.DialogState.SCREEN_HOME
+import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -64,6 +60,7 @@ import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import javax.inject.Inject
 import kotlin.coroutines.cancellation.CancellationException
 
 data class ListState(
@@ -120,23 +117,19 @@ sealed class ScreenEvent {
     data class GetServerSettings(val value: RequestDataDTO) : ScreenEvent()
 
     data class SendServerStopMode(val value: String) : ScreenEvent()
+    data class GetAllRegServerFromDB(val value: String) : ScreenEvent()
 }
 
-class MainViewModel(
-    application: Application,
-    context: Context?,
-    private val loadDataFromDBUseCase: LoadDataFromDBUseCase,
-    private val loadEventServerFromDBUseCase: LoadEventServerFromDBUseCase,
-    private val loadLastEventServerFromDBUseCase: LoadLastEventServerFromDBUseCase,
-    private val deleteLastEventServerByIdFromDBUseCase: DeleteLastEventServerByIdFromDBUseCase,
-    private val getOneLastEventServerFromDBUseCase: GetOneLastEventServerFromDBUseCase,
-//    private val getRegServerByDvidFromDBUseCase: GetRegServerByDvidFromDBUseCase,
-    private val insertRegServerInDBUseCase: InsertRegServerInDBUseCase,
-    private val saveEventServerInDBUseCase: SaveEventServerInDBUseCase,
+@HiltViewModel
+class MainViewModel @Inject constructor(
+     application: Application,
+    private val dBRepository: DBRepository
 
-    ) : ViewModel() {
+) : ViewModel() {
+
     @SuppressLint("StaticFieldLeak")
-    private val contextIn = context
+    private val contextIn = application.applicationContext
+//    private val contextIn = context
     private val regGetDataWIFIUseCase = RegGetDataWIFIUseCase()
     private val regSendDataWIFIUseCase = RegSendDataWIFIUseCase()
     private val deleteEventServerUseCase = DeleteEventServerUseCase()
@@ -274,6 +267,9 @@ class MainViewModel(
 
     private val _uiState = MutableStateFlow(UiState())
     val uiState: StateFlow<UiState> = _uiState
+
+    private val _regState = MutableStateFlow(listOf(RegServerEntity()))
+    val regState: StateFlow< List<RegServerEntity>> = _regState
 
     // Новый StateFlow для хранения списка последних 10 значений UiState
     private val _uiStateList = MutableStateFlow<List<UiState>>(emptyList())
@@ -690,7 +686,8 @@ class MainViewModel(
                     com = "rs",
                     num = regDataWIFI.last().num
                 )
-                insertRegServerInDBUseCase.execute(regServerEntity)
+                dBRepository.insertRegServer(regServerEntity)
+//                insertRegServerInDBUseCase.execute(regServerEntity)
                 saveRegDataPrefs(requestDataDTO)
                 _listDevices.add(requestDataDTO)
             }
@@ -745,6 +742,10 @@ class MainViewModel(
             is ScreenEvent.SendServerStopMode -> {
                 sendServerStopMode()
 //                restartRel()
+            }
+
+            is ScreenEvent.GetAllRegServerFromDB -> {
+                _regState.value = dBRepository.getAllRegServer()
             }
         }
     }
@@ -1112,13 +1113,21 @@ class MainViewModel(
                     reqNUMString.toInt()
                 } else 0
 
-                val event =
-                    getOneLastEventServerFromDBUseCase.execute(
-                        preferences.getInt(
-                            "EVENT_ID",
-                            0
-                        )
+
+                val event = dBRepository.getOneLastEventServerFromDB(
+                    preferences.getInt(
+                        "EVENT_ID",
+                        0
                     )
+                )
+
+//                val event =
+//                    getOneLastEventServerFromDBUseCase.execute(
+//                        preferences.getInt(
+//                            "EVENT_ID",
+//                            0
+//                        )
+//                    )
                 val dto =
                     DeleteEventDTO(
                         reqDVID,
@@ -1164,13 +1173,13 @@ class MainViewModel(
                 del.onSuccess { res ->
                     if (res.success) {
 
-
-                        deleteLastEventServerByIdFromDBUseCase.execute(
-                            preferences.getInt(
-                                "EVENT_ID",
-                                0
-                            )
-                        )
+                        dBRepository.deleteLastEventServerById(preferences.getInt("EVENT_ID", 0))
+//                        deleteLastEventServerByIdFromDBUseCase.execute(
+//                            preferences.getInt(
+//                                "EVENT_ID",
+//                                0
+//                            )
+//                        )
 
                         preferences
                             .edit()
@@ -1234,7 +1243,8 @@ class MainViewModel(
                         } else {
                             showToast("Регистрация успешна")
 
-                            insertRegServerInDBUseCase.execute(regDataEntity.copy(com = "rs"))
+                            dBRepository.insertRegServer(regDataEntity.copy(com = "rs"))
+//                            insertRegServerInDBUseCase.execute(regDataEntity.copy(com = "rs"))
                             saveRegDataPrefs(regDataDTO)
                             _listDevices.add(regDataDTO)
                         }
@@ -1251,12 +1261,13 @@ class MainViewModel(
     }
 
     private fun loadDataFromDatabase() {
-          viewModelScope.launch {
+        viewModelScope.launch {
             var counterBase = 0
             var counterServ = 0
             var counterErr = 0
             while (isActive) {
-                val uiStateFromDb = loadDataFromDBUseCase.execute()
+//                val uiStateFromDb = loadDataFromDBUseCase.execute()
+                val uiStateFromDb = dBRepository.getUiStates()
                 _uiStateList.value = uiStateFromDb
 
                 uiStateFromDb.firstOrNull()?.let { newState ->
@@ -1311,7 +1322,16 @@ class MainViewModel(
                                             val formatter =
                                                 DateTimeFormatter.ofPattern("dd.MM.yyyy, HH:mm:ss")
                                             val formattedTime = moscowTime.format(formatter)
-                                            saveEventServerInDBUseCase.execute(
+//                                            saveEventServerInDBUseCase.execute(
+//                                                StatusEventServerDTO(
+//                                                    id = 1,
+//                                                    timeev = "$formattedTime",
+//                                                    rstate = "-1",
+//                                                    value = "-1",
+//                                                    name = "${error.message}"
+//                                                )
+//                                            )
+                                            dBRepository.saveEventServerInDB(
                                                 StatusEventServerDTO(
                                                     id = 1,
                                                     timeev = "$formattedTime",
@@ -1338,7 +1358,8 @@ class MainViewModel(
 
     private fun loadEventServerFromDB() {
         viewModelScope.launch {
-            val events = loadEventServerFromDBUseCase.execute()
+            val events = dBRepository.getEventServerFromDB()
+//            val events = loadEventServerFromDBUseCase.execute()
             _eventServerList.value = events
         }
     }
@@ -1348,9 +1369,10 @@ class MainViewModel(
 
             val savedEventPrefsID = preferences.getInt("EVENT_ID", 0)
             try {
-                val lastEvent =
-                    getOneLastEventServerFromDBUseCase.execute(savedEventPrefsID)
+//                val lastEvent =
+//                    getOneLastEventServerFromDBUseCase.execute(savedEventPrefsID)
 
+                val lastEvent = dBRepository.getOneLastEventServerFromDB(savedEventPrefsID)
                 if (lastEvent != null) {
                     _finalEventState.value = lastEvent
                 } else {

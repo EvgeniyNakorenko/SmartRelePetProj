@@ -13,17 +13,12 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import co.yml.charts.common.extensions.isNotNull
 import com.example.detectcontroller.R
-import com.example.detectcontroller.data.local.AppDatabase
 import com.example.detectcontroller.data.local.locDTO.LastEventsServerEntity
 import com.example.detectcontroller.data.local.locDTO.RegServerEntity
 import com.example.detectcontroller.data.remote.remDTO.DeleteEventDTO
 import com.example.detectcontroller.data.remote.remDTO.RequestDataDTO
-import com.example.detectcontroller.domain.db.GetAllRegServerFromDBUseCase
-import com.example.detectcontroller.domain.db.GetOneLastEventServerFromDBUseCase
+import com.example.detectcontroller.domain.DBRepository
 import com.example.detectcontroller.domain.db.InsertLastEventServerInDBUseCase
-import com.example.detectcontroller.domain.db.LoadLastEventServerFromDBUseCase
-import com.example.detectcontroller.domain.db.SaveDataInDBUseCase
-import com.example.detectcontroller.domain.db.SaveEventServerInDBUseCase
 import com.example.detectcontroller.domain.server.CheckServerEventUseCase
 import com.example.detectcontroller.domain.server.DeleteEventServerUseCase
 import com.example.detectcontroller.domain.server.FetchDataUseCase
@@ -34,23 +29,28 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 import kotlin.random.Random
 
-class ForegroundService() : Service() {
 
+class ForegroundService : Service() {
+
+    @Inject
+    lateinit var dBRepository: DBRepository
     private lateinit var notificationManager: NotificationManager
 
     private var isStarted = false
     private val scope = CoroutineScope(Dispatchers.Default)
     private val fetchDataUseCase = FetchDataUseCase()
 
-    private lateinit var database: AppDatabase
-    private lateinit var saveDataInDBUseCase: SaveDataInDBUseCase
+//     lateinit var database: AppDatabase
+//    private lateinit var saveDataInDBUseCase: SaveDataInDBUseCase
 
-    private lateinit var saveEventUseCase: SaveEventServerInDBUseCase
-    private lateinit var loadLastEventServerFromDBUseCase: LoadLastEventServerFromDBUseCase
-    private lateinit var getOneLastEventServerFromDBUseCase: GetOneLastEventServerFromDBUseCase
-    private lateinit var getAllRegServerFromDBUseCase: GetAllRegServerFromDBUseCase
+    //    private lateinit var saveEventUseCase: SaveEventServerInDBUseCase
+//    private lateinit var loadLastEventServerFromDBUseCase: LoadLastEventServerFromDBUseCase
+
+    //    private lateinit var getOneLastEventServerFromDBUseCase: GetOneLastEventServerFromDBUseCase
+//    private lateinit var getAllRegServerFromDBUseCase: GetAllRegServerFromDBUseCase
     private lateinit var insertLastEventServerInDBUseCase: InsertLastEventServerInDBUseCase
     private lateinit var deleteEventServerUseCase: DeleteEventServerUseCase
     private lateinit var checkServerEventUseCase: CheckServerEventUseCase
@@ -64,13 +64,14 @@ class ForegroundService() : Service() {
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         preferences = application.getSharedPreferences(REL_SETTINGS, Context.MODE_PRIVATE)
         goModeOff = preferences.getBoolean(RELE_MODE_GO, false) ?: false
-        database = AppDatabase.getDatabase(this)
-        saveDataInDBUseCase = SaveDataInDBUseCase(database)
-        saveEventUseCase = SaveEventServerInDBUseCase(database)
-        loadLastEventServerFromDBUseCase = LoadLastEventServerFromDBUseCase(database)
-        getOneLastEventServerFromDBUseCase = GetOneLastEventServerFromDBUseCase(database)
-        getAllRegServerFromDBUseCase = GetAllRegServerFromDBUseCase(database)
-        insertLastEventServerInDBUseCase = InsertLastEventServerInDBUseCase(database)
+//        database = AppDatabase.getDatabase(this)
+//        saveDataInDBUseCase = SaveDataInDBUseCase(database)
+
+//        saveEventUseCase = SaveEventServerInDBUseCase(database)
+//        loadLastEventServerFromDBUseCase = LoadLastEventServerFromDBUseCase(database)
+//        getOneLastEventServerFromDBUseCase = GetOneLastEventServerFromDBUseCase(database)
+//        getAllRegServerFromDBUseCase = GetAllRegServerFromDBUseCase(database)
+//        insertLastEventServerInDBUseCase = InsertLastEventServerInDBUseCase(database)
         checkServerEventUseCase = CheckServerEventUseCase()
         deleteEventServerUseCase = DeleteEventServerUseCase()
         deviceData = getGegData("rs")
@@ -150,7 +151,8 @@ class ForegroundService() : Service() {
 
                     if (regData == null) {
                         try {
-                            regData = getAllRegServerFromDBUseCase.execute().lastOrNull()
+                            regData = dBRepository.getAllRegServer().lastOrNull()
+//                            regData = getAllRegServerFromDBUseCase.execute().lastOrNull()
                         } catch (e: Exception) {
                             Log.e(TAG, "download reg data error", e)
                         }
@@ -172,16 +174,24 @@ class ForegroundService() : Service() {
 
                     event?.onSuccess { res ->
 
-                        saveEventUseCase.execute(res)
-                        insertLastEventServerInDBUseCase.execute(
-                            LastEventsServerEntity(
-                                id = res.id,
-                                timeev = res.timeev,
-                                rstate = res.rstate,
-                                value = res.value,
-                                name = res.name
-                            )
-                        )
+                        dBRepository.saveEventServerInDB(res)
+//                        saveEventUseCase.execute(res)
+                        dBRepository.insertLastEventServerDB( LastEventsServerEntity(
+                            id = res.id,
+                            timeev = res.timeev,
+                            rstate = res.rstate,
+                            value = res.value,
+                            name = res.name
+                        ))
+//                        insertLastEventServerInDBUseCase.execute(
+//                            LastEventsServerEntity(
+//                                id = res.id,
+//                                timeev = res.timeev,
+//                                rstate = res.rstate,
+//                                value = res.value,
+//                                name = res.name
+//                            )
+//                        )
                         delay(10)
 
                         preferences
@@ -254,7 +264,8 @@ class ForegroundService() : Service() {
 
                 if (regData == null) {
                     try {
-                        regData = getAllRegServerFromDBUseCase.execute().lastOrNull()
+                        regData = dBRepository.getAllRegServer().lastOrNull()
+//                        regData = getAllRegServerFromDBUseCase.execute().lastOrNull()
                     } catch (e: Exception) {
                         Log.e(TAG, "download reg data error", e)
                     }
@@ -290,7 +301,8 @@ class ForegroundService() : Service() {
 
                     val dataFromServer = loadReq?.let { fetchDataUseCase.execute(it) }
                     dataFromServer?.onSuccess { res ->
-                        saveDataInDBUseCase.execute(res)
+                        dBRepository.saveDataServerInDB(res)
+//                        saveDataInDBUseCase.execute(res)
 
                     }?.onFailure { error ->
                         error.printStackTrace()
