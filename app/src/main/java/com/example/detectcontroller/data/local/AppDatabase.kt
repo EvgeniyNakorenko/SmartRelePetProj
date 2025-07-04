@@ -22,7 +22,6 @@ import com.example.detectcontroller.data.local.locDTO.UiStateEntity
     exportSchema = true
 )
 
-//@TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun uiStateDao(): UiStateDao
 
@@ -30,7 +29,6 @@ abstract class AppDatabase : RoomDatabase() {
         @Volatile
         private var INSTANCE: AppDatabase? = null
 
-        // Исправленная миграция с версии 3 на 4
         val MIGRATION_3_4 = object : Migration(3, 4) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("""
@@ -47,32 +45,4 @@ abstract class AppDatabase : RoomDatabase() {
     }
 }
 
-//@Database(
-//    entities = [
-//        UiStateEntity::class,
-//        EventServerEntity::class,
-//        RegServerEntity::class,
-//        LastEventsServerEntity::class
-//    ],
-//    version = 3
-//)
-//abstract class AppDatabase : RoomDatabase() {
-//    abstract fun uiStateDao(): UiStateDao
-//
-//    companion object {
-//        @Volatile
-//        private var INSTANCE: AppDatabase? = null
-//
-//        fun getDatabase(context: Context): AppDatabase {
-//            return INSTANCE ?: synchronized(this) {
-//                val instance = Room.databaseBuilder(
-//                    context.applicationContext,
-//                    AppDatabase::class.java,
-//                    "app_database"
-//                ).build()
-//                INSTANCE = instance
-//                instance
-//            }
-//        }
-//    }
-//}
+

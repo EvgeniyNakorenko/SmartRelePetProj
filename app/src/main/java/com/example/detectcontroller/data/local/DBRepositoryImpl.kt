@@ -15,7 +15,6 @@ import javax.inject.Inject
 @Module
 @InstallIn(SingletonComponent::class)
 class DBRepositoryImpl @Inject constructor(
-//    private val database: AppDatabase,
     private val uiStateDao: UiStateDao,
 ) : DBRepository {
 
