@@ -1,6 +1,6 @@
 package com.example.detectcontroller.data.remote.remDTO
 
-data class UiState(
+data class UiStateDTO(
     val timedv: String = "LoadLoad..",
     val stt: String = "LoadLoad..",
     val url: String = "LoadLoad..",

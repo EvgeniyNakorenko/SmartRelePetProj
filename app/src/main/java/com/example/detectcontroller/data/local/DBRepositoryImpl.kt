@@ -1,12 +1,14 @@
 package com.example.detectcontroller.data.local
 
+import com.example.detectcontroller.data.local.locDTO.ErrorEntity
 import com.example.detectcontroller.data.local.locDTO.EventServerEntity
 import com.example.detectcontroller.data.local.locDTO.LastEventsServerEntity
 import com.example.detectcontroller.data.local.locDTO.RegServerEntity
 import com.example.detectcontroller.data.local.locDTO.UiStateEntity
 import com.example.detectcontroller.data.remote.remDTO.StatusEventServerDTO
-import com.example.detectcontroller.data.remote.remDTO.UiState
+import com.example.detectcontroller.data.remote.remDTO.UiStateDTO
 import com.example.detectcontroller.domain.DBRepository
+import com.example.detectcontroller.domain.models.ErrorServerMod
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
@@ -18,7 +20,7 @@ class DBRepositoryImpl @Inject constructor(
     private val uiStateDao: UiStateDao,
 ) : DBRepository {
 
-    override suspend fun getUiStates(): List<UiState> {
+    override suspend fun getUiStates(): List<UiStateDTO> {
         return uiStateDao.getFirstTen().map { it.toDomain() }
     }
 
@@ -50,15 +52,50 @@ class DBRepositoryImpl @Inject constructor(
         return uiStateDao.getAllRegServer()
     }
 
-    override suspend fun saveDataServerInDB(uiState: UiState) {
-        uiStateDao.insertUiState(uiState.toData())
+    override suspend fun saveDataServerInDB(uiStateDTO: UiStateDTO) {
+        uiStateDao.insertUiState(uiStateDTO.toData())
     }
 
     override suspend fun insertLastEventServerDB(lastEventsServerEntity: LastEventsServerEntity) {
         uiStateDao.insertLastEventServer(lastEventsServerEntity)
     }
 
-    private fun UiState.toData(): UiStateEntity {
+    override suspend fun insertError(error: ErrorServerMod) {
+        uiStateDao.insertError(error.toData())
+    }
+
+    override suspend fun getAllErrors(): List<ErrorServerMod> {
+        return uiStateDao.getAllErrors().map { it.toDomain() }
+    }
+
+    override suspend fun clearOldErrors(threshold: Long) {
+        uiStateDao.clearOldErrors(threshold)
+    }
+
+    private fun ErrorEntity.toDomain(): ErrorServerMod {
+        return ErrorServerMod(
+            id = id,
+            errorCode = errorCode,
+            errorMessage = errorMessage,
+            timestamp = timestamp,
+            deviceId = deviceId
+        )
+    }
+
+
+    private fun ErrorServerMod.toData(): ErrorEntity {
+        return ErrorEntity(
+            id = id,
+            errorCode = errorCode,
+            errorMessage = errorMessage,
+            timestamp = timestamp,
+            deviceId = deviceId
+        )
+    }
+
+
+
+    private fun UiStateDTO.toData(): UiStateEntity {
         return UiStateEntity(
             timedv = timedv,
             stt = stt,
@@ -70,6 +107,7 @@ class DBRepositoryImpl @Inject constructor(
             rmode = rmode,
             gomode = gomode,
             modes = modes,
+            online = online
         )
     }
 
@@ -103,8 +141,8 @@ class DBRepositoryImpl @Inject constructor(
         )
     }
 
-    private fun UiStateEntity.toDomain(): UiState {
-        return UiState(
+    private fun UiStateEntity.toDomain(): UiStateDTO {
+        return UiStateDTO(
             timedv = timedv,
             stt = stt,
             url = url,
@@ -114,7 +152,8 @@ class DBRepositoryImpl @Inject constructor(
             tmp = tmp,
             rmode = rmode,
             gomode = gomode,
-            modes = modes
+            modes = modes,
+            online = online
         )
     }
 }

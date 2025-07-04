@@ -286,7 +286,7 @@ class ForegroundService : Service() {
                     ////////////////////////////////////////////
 //                    repeat(9) {
 //                        saveDataInDBUseCase.execute(
-//                            UiState(
+//                            UiStateDTO(
 //                                "timedv: ${Random.nextInt(1, 31)}-06-2024 14:13:12",
 //                                "----0",
 //                                "----${Random.nextInt(200, 230)}",

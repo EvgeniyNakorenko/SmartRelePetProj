@@ -5,14 +5,14 @@ package com.example.detectcontroller.domain.server
 import com.example.detectcontroller.data.remote.ApiService
 import com.example.detectcontroller.data.remote.RetrofitClient
 import com.example.detectcontroller.data.remote.remDTO.RequestDataDTO
-import com.example.detectcontroller.data.remote.remDTO.UiState
+import com.example.detectcontroller.data.remote.remDTO.UiStateDTO
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 
 class FetchDataUseCase {
 
-    suspend fun execute(requestDataDTO: RequestDataDTO): Result<UiState> {
+    suspend fun execute(requestDataDTO: RequestDataDTO): Result<UiStateDTO> {
         return withContext(Dispatchers.IO) {
             try {
 //                val apiService = RetrofitClient.getClient("http://82.97.247.240:3000/").create(
@@ -40,7 +40,7 @@ class FetchDataUseCase {
                     }
 
                     Result.success(
-                        UiState(
+                        UiStateDTO(
                             timedv = "timedv: ${jsonObject.getString("timedv")}",
                             stt = "stt: ${jsonObject.getInt("stt")}",
                             url = "url: ${jsonObject.getString("url").trim().toInt()}",
@@ -51,6 +51,7 @@ class FetchDataUseCase {
                             rmode = "${jsonObject.getInt("rmode")}",
                             gomode = "${jsonObject.getInt("gomode")}",
                             modes = "${jsonObject.getInt("modes")}",
+                            online = "${jsonObject.getInt("online")}",
                         )
                     )
                 } else {

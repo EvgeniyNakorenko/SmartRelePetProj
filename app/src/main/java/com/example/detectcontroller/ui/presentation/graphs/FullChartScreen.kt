@@ -25,7 +25,7 @@ fun FullChartScreen(
     viewModel: MainViewModel,
     onBack: () -> Unit
 ) {
-    val uiStates by viewModel.uiStateListGraph.collectAsState()
+    val uiStates by viewModel.uiStateDTOListGraph.collectAsState()
     val reversedUiStates = uiStates.reversed()
     val pointsDataI = convertUiStatesToPointsI(reversedUiStates)
     val xMod = reversedUiStates.map { it.timedv.drop(8).take(9).replace('-', '.') }

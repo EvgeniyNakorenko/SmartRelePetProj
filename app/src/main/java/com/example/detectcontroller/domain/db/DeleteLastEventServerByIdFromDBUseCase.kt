@@ -1,7 +1,5 @@
 package com.example.detectcontroller.domain.db
 
-import com.example.detectcontroller.data.local.AppDatabase
-import com.example.detectcontroller.data.remote.remDTO.UiState
 import com.example.detectcontroller.domain.DBRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -18,7 +16,7 @@ import kotlinx.coroutines.withContext
 //class LoadDataFromDBUseCase(
 //    private val repository: DBRepository
 //) {
-//    suspend fun execute(): List<UiState> {
+//    suspend fun execute(): List<UiStateDTO> {
 //        return repository.getUiStates()
 //    }
 //}

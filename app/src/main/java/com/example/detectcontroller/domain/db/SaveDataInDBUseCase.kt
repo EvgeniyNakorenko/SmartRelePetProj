@@ -1,29 +1,26 @@
 package com.example.detectcontroller.domain.db
 
-import com.example.detectcontroller.data.local.AppDatabase
-import com.example.detectcontroller.data.local.locDTO.UiStateEntity
-import com.example.detectcontroller.data.remote.remDTO.StatusEventServerDTO
-import com.example.detectcontroller.data.remote.remDTO.UiState
+import com.example.detectcontroller.data.remote.remDTO.UiStateDTO
 import com.example.detectcontroller.domain.DBRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 //class SaveDataInDBUseCase(private val database: AppDatabase) {
 //
-//    suspend fun execute(uiState: UiState) {
+//    suspend fun execute(uiStateDTO: UiStateDTO) {
 //        withContext(Dispatchers.IO) {
 //            val uiStateEntity = UiStateEntity(
-//                timedv = uiState.timedv,
-//                stt = uiState.stt,
-//                url = uiState.url,
-//                irl = uiState.irl,
-//                pwr = uiState.pwr,
-//                frq = uiState.frq,
-//                tmp = uiState.tmp,
-//                rmode = uiState.rmode,
-//                gomode = uiState.gomode,
-//                modes = uiState.modes,
-////                bVis = uiState.bVis,
+//                timedv = uiStateDTO.timedv,
+//                stt = uiStateDTO.stt,
+//                url = uiStateDTO.url,
+//                irl = uiStateDTO.irl,
+//                pwr = uiStateDTO.pwr,
+//                frq = uiStateDTO.frq,
+//                tmp = uiStateDTO.tmp,
+//                rmode = uiStateDTO.rmode,
+//                gomode = uiStateDTO.gomode,
+//                modes = uiStateDTO.modes,
+////                bVis = uiStateDTO.bVis,
 //            )
 //            database.uiStateDao().insertUiState(uiStateEntity)
 //        }
@@ -32,9 +29,9 @@ import kotlinx.coroutines.withContext
 
 class SaveDataInDBUseCase(private val repository: DBRepository) {
 
-    suspend fun execute(uiState: UiState) {
+    suspend fun execute(uiStateDTO: UiStateDTO) {
         withContext(Dispatchers.IO) {
-            repository.saveDataServerInDB(uiState)
+            repository.saveDataServerInDB(uiStateDTO)
         }
     }
 }

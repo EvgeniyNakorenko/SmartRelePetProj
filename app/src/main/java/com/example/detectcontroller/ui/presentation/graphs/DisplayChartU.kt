@@ -32,7 +32,7 @@ fun DisplayChartU(viewModel: MainViewModel) {
             ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
     }
 
-    val uiStates by viewModel.uiStateListGraph.collectAsState()
+    val uiStates by viewModel.uiStateDTOListGraph.collectAsState()
     val reversedUiStates = uiStates.reversed()
     val pointsDataU = convertUiStatesToPointsU(reversedUiStates)
     val configuration = LocalConfiguration.current

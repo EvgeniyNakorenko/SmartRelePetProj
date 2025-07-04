@@ -13,14 +13,3 @@ data class ErrorEntity (
     val deviceId: String?
 )
 
-
-//
-//@Entity(tableName = "last_event_server")
-//data class LastEventsServerEntity(
-//    @PrimaryKey
-//    val id: Int,
-//    val timeev: String,
-//    val rstate: String,
-//    val value: String,
-//    val name: String,
-//)

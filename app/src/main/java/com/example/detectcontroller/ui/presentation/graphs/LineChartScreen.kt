@@ -42,7 +42,7 @@ import co.yml.charts.ui.linechart.model.LineStyle
 import co.yml.charts.ui.linechart.model.SelectionHighlightPoint
 import co.yml.charts.ui.linechart.model.SelectionHighlightPopUp
 import co.yml.charts.ui.linechart.model.ShadowUnderLine
-import com.example.detectcontroller.data.remote.remDTO.UiState
+import com.example.detectcontroller.data.remote.remDTO.UiStateDTO
 import com.example.detectcontroller.ui.presentation.MainViewModel
 
 class LineChartScreen {
@@ -139,7 +139,7 @@ class LineChartScreen {
 
 //    @Composable
 //    fun DisplayChartI(viewModel: MainViewModel, isFullScreen: Boolean) {
-//        val uiStates by viewModel.uiStateListGraph.collectAsState()
+//        val uiStates by viewModel.uiStateDTOListGraph.collectAsState()
 //        val reversedUiStates = uiStates.reversed()
 //        val pointsDataI = convertUiStatesToPointsI(reversedUiStates)
 //        val configuration = LocalConfiguration.current
@@ -178,7 +178,7 @@ class LineChartScreen {
 
     @Composable
     fun DisplayChartI(viewModel: MainViewModel) {
-        val uiStates by viewModel.uiStateListGraph.collectAsState()
+        val uiStates by viewModel.uiStateDTOListGraph.collectAsState()
         val reversedUiStates = uiStates.reversed()
         val pointsDataI = convertUiStatesToPointsI(reversedUiStates)
         val configuration = LocalConfiguration.current
@@ -213,7 +213,7 @@ class LineChartScreen {
 
     @Composable
     fun DisplayChartU(viewModel: MainViewModel) {
-        val uiStates by viewModel.uiStateListGraph.collectAsState()
+        val uiStates by viewModel.uiStateDTOListGraph.collectAsState()
         val reversedUiStates = uiStates.reversed()
         val pointsDataU = convertUiStatesToPointsU(reversedUiStates)
         val configuration = LocalConfiguration.current
@@ -247,7 +247,7 @@ class LineChartScreen {
 
     @Composable
     fun DisplayChartP(viewModel: MainViewModel) {
-        val uiStates by viewModel.uiStateListGraph.collectAsState()
+        val uiStates by viewModel.uiStateDTOListGraph.collectAsState()
         val reversedUiStates = uiStates.reversed()
         val pointsDataP = convertUiStatesToPointsP(reversedUiStates)
         val configuration = LocalConfiguration.current
@@ -355,8 +355,8 @@ class LineChartScreen {
 
 }
 
-fun convertUiStatesToPointsI(uiStates: List<UiState>): List<Point> {
-    return uiStates.mapIndexed { index, uiState ->
+fun convertUiStatesToPointsI(uiStateDTOS: List<UiStateDTO>): List<Point> {
+    return uiStateDTOS.mapIndexed { index, uiState ->
         Point(
             x = index.toFloat(),
             y = uiState.irl.drop(4).toFloatOrNull() ?: 0f
@@ -364,8 +364,8 @@ fun convertUiStatesToPointsI(uiStates: List<UiState>): List<Point> {
     }
 }
 
-fun convertUiStatesToPointsU(uiStates: List<UiState>): List<Point> {
-    return uiStates.mapIndexed { index, uiState ->
+fun convertUiStatesToPointsU(uiStateDTOS: List<UiStateDTO>): List<Point> {
+    return uiStateDTOS.mapIndexed { index, uiState ->
         Point(
             x = index.toFloat(),
             y = uiState.url.drop(4).toFloatOrNull() ?: 0f
@@ -373,8 +373,8 @@ fun convertUiStatesToPointsU(uiStates: List<UiState>): List<Point> {
     }
 }
 
-fun convertUiStatesToPointsP(uiStates: List<UiState>): List<Point> {
-    return uiStates.mapIndexed { index, uiState ->
+fun convertUiStatesToPointsP(uiStateDTOS: List<UiStateDTO>): List<Point> {
+    return uiStateDTOS.mapIndexed { index, uiState ->
         Point(
             x = index.toFloat(),
             y = uiState.pwr.drop(4).toFloatOrNull() ?: 0f
@@ -466,7 +466,7 @@ fun convertUiStatesToPointsP(uiStates: List<UiState>): List<Point> {
 //
 //@Composable
 //fun FullScreenRotatedChartI(viewModel: MainViewModel) {
-//    val uiStates by viewModel.uiStateListGraph.collectAsState()
+//    val uiStates by viewModel.uiStateDTOListGraph.collectAsState()
 //    val reversedUiStates = uiStates.reversed()
 //    val pointsDataI = convertUiStatesToPointsI(reversedUiStates)
 //    val xMod = reversedUiStates.map { it.timedv.drop(8).take(9).replace('-', '.') }
@@ -500,7 +500,7 @@ fun convertUiStatesToPointsP(uiStates: List<UiState>): List<Point> {
 //
 //@Composable
 //fun FullScreenRotatedChartU(viewModel: MainViewModel) {
-//    val uiStates by viewModel.uiStateListGraph.collectAsState()
+//    val uiStates by viewModel.uiStateDTOListGraph.collectAsState()
 //    val reversedUiStates = uiStates.reversed()
 //    val pointsDataU = convertUiStatesToPointsU(reversedUiStates)
 //    val xMod = reversedUiStates.map { it.timedv.drop(8).take(9).replace('-', '.') }
@@ -533,7 +533,7 @@ fun convertUiStatesToPointsP(uiStates: List<UiState>): List<Point> {
 //
 //@Composable
 //fun FullScreenRotatedChartP(viewModel: MainViewModel) {
-//    val uiStates by viewModel.uiStateListGraph.collectAsState()
+//    val uiStates by viewModel.uiStateDTOListGraph.collectAsState()
 //    val reversedUiStates = uiStates.reversed()
 //    val pointsDataP = convertUiStatesToPointsP(reversedUiStates)
 //    val xMod = reversedUiStates.map { it.timedv.drop(8).take(9).replace('-', '.') }

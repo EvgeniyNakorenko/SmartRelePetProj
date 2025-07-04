@@ -49,7 +49,7 @@ interface UiStateDao {
     suspend fun deleteLastEventDBById(id: Int)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(error: ErrorEntity)
+    suspend fun insertError(error: ErrorEntity)
 
     @Query("SELECT * FROM ErrorEntity ORDER BY id DESC LIMIT 20")
     fun getAllErrors(): List<ErrorEntity>

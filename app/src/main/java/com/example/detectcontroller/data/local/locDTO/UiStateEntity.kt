@@ -16,5 +16,6 @@ data class UiStateEntity(
     val rmode: String,
     val gomode: String,
     val modes: String,
+    val online: String,
 //    val bVis: Boolean
 )

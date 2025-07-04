@@ -22,7 +22,6 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -33,7 +32,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -57,7 +55,6 @@ import com.example.detectcontroller.ui.presentation.MainViewModel.Companion.U_TE
 import com.example.detectcontroller.ui.presentation.ScreenEvent
 import com.example.detectcontroller.ui.presentation.utils.Item
 import com.example.detectcontroller.ui.presentation.utils.Screen
-import kotlinx.coroutines.delay
 
 
 @Composable
@@ -68,7 +65,7 @@ fun SingleDevice(
 ) {
 
 
-    val uiState by mainViewModel.uiState.collectAsState()
+    val uiState by mainViewModel.uiStateDTO.collectAsState()
 //    var bVis = remember { preferences.getBoolean(B_VIS,true)}
     val bVis = remember { mutableStateOf(preferences.getBoolean(B_VIS, true)) }
     val releModeGoVisVal by mainViewModel.buttonGoVisib.collectAsState()
@@ -129,7 +126,7 @@ fun SingleDevice(
                             }
                             "6" -> mainViewModel.createEvent(ScreenEvent.SendServerStopMode(""))
                         }
-//                        if (uiState.modes != "1" && uiState.modes != "6") {
+//                        if (uiStateDTO.modes != "1" && uiStateDTO.modes != "6") {
 //                            mainViewModel.createEvent(ScreenEvent.SendServerGoMode(""))
 //                        } else {
 //                            mainViewModel.createEvent(ScreenEvent.SendServerStopMode(""))
@@ -137,40 +134,15 @@ fun SingleDevice(
                     },
                     enabled = releModeGoVisVal,
                 )
-//
-//                var isButtonEnabled by remember { mutableStateOf(true) }
-//                var buttonAction by remember { mutableStateOf<(() -> Unit)?>(null) }
-//
-//                LaunchedEffect(buttonAction) {
-//                    buttonAction?.invoke()
-//                    buttonAction = null
-//                    if (!isButtonEnabled) {
-//                        delay(7000)
-//                        isButtonEnabled = true
-//                    }
-//                }
-//
-//                ToggleIconButton(
-//                    isChecked = uiState.gomode == "1",
-//                    onCheckedChange = {
-//                        if (isButtonEnabled) {
-//                            isButtonEnabled = false
-//                            buttonAction = {
-//                                if (uiState.gomode != "1") {
-//                                    mainViewModel.createEvent(ScreenEvent.SendServerGoMode(""))
-//                                } else {
-//                                    mainViewModel.createEvent(ScreenEvent.SendServerStopMode(""))
-//                                }
-//                            }
-//                        }
-//                    },
-//                    enabled = isButtonEnabled
-//                )
 
                 Column(
                     modifier = Modifier.padding(4.dp),
                     horizontalAlignment = Alignment.Start
                 ) {
+                    Text(
+                        text = "онлайн: ${uiState.online}",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
                     Text(
                         text = "режим: ${uiState.rmode}",
                         style = MaterialTheme.typography.bodyMedium

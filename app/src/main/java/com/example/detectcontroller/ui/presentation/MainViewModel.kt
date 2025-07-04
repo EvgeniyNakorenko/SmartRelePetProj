@@ -30,7 +30,7 @@ import com.example.detectcontroller.data.remote.remDTO.SendServerSettingsMode4DT
 import com.example.detectcontroller.data.remote.remDTO.SendServerSettingsMode5DTO
 import com.example.detectcontroller.data.remote.remDTO.SendSettingsDTO
 import com.example.detectcontroller.data.remote.remDTO.StatusEventServerDTO
-import com.example.detectcontroller.data.remote.remDTO.UiState
+import com.example.detectcontroller.data.remote.remDTO.UiStateDTO
 import com.example.detectcontroller.domain.DBRepository
 import com.example.detectcontroller.domain.registration.RegGetDataWIFIUseCase
 import com.example.detectcontroller.domain.registration.RegSendDataWIFIUseCase
@@ -46,9 +46,7 @@ import com.example.detectcontroller.domain.server.SendSettingsServerUseCase
 import com.example.detectcontroller.ui.presentation.composeFunc.DialogState
 import com.example.detectcontroller.ui.presentation.composeFunc.DialogState.INVISIBLE
 import com.example.detectcontroller.ui.presentation.composeFunc.DialogState.SCREEN_HOME
-import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -265,15 +263,15 @@ class MainViewModel @Inject constructor(
     private val _screenState = mutableStateOf(ListState())
     val screenState: State<ListState> = _screenState
 
-    private val _uiState = MutableStateFlow(UiState())
-    val uiState: StateFlow<UiState> = _uiState
+    private val _uiStateDTO = MutableStateFlow(UiStateDTO())
+    val uiStateDTO: StateFlow<UiStateDTO> = _uiStateDTO
 
     private val _regState = MutableStateFlow(listOf(RegServerEntity()))
     val regState: StateFlow< List<RegServerEntity>> = _regState
 
-    // Новый StateFlow для хранения списка последних 10 значений UiState
-    private val _uiStateList = MutableStateFlow<List<UiState>>(emptyList())
-    val uiStateListGraph: StateFlow<List<UiState>> = _uiStateList
+    // Новый StateFlow для хранения списка последних 10 значений UiStateDTO
+    private val _uiStateDTOList = MutableStateFlow<List<UiStateDTO>>(emptyList())
+    val uiStateDTOListGraph: StateFlow<List<UiStateDTO>> = _uiStateDTOList
 
     ///////////////////
     // Новый StateFlow для StatusEventServerDTO
@@ -757,7 +755,7 @@ class MainViewModel @Inject constructor(
 
         preferences.edit().putBoolean(B_VIS, false).apply()
 
-//        _uiState.value = _uiState.value.copy(bVis = false)
+//        _uiStateDTO.value = _uiStateDTO.value.copy(bVis = false)
         val reqDVID = preferences.getString(REG_DVID, "") ?: ""
         val reqTKN = preferences.getString(REG_TKN, "") ?: ""
         val reqTYPEVD = preferences.getString(REG_TYPEDV, "")?.toIntOrNull() ?: 0
@@ -774,7 +772,7 @@ class MainViewModel @Inject constructor(
                 viewModelScope.launch {
                     while (isActive) {
                         var gomodeZero = ""
-                        gomodeZero = _uiState.value.gomode
+                        gomodeZero = _uiStateDTO.value.gomode
                         if (gomodeZero == "0") break
                         delay(1000)
                     }
@@ -797,7 +795,7 @@ class MainViewModel @Inject constructor(
                     }
 
                 }
-//                if (_uiState.value.gomode == "0")
+//                if (_uiStateDTO.value.gomode == "0")
 
 
 //                showToastDelay("Ожидаем ответ на устройство")
@@ -817,7 +815,7 @@ class MainViewModel @Inject constructor(
         Thread.sleep(100)
         _buttonGoVisib.value = false
         preferences.edit().putBoolean(B_VIS, false).apply()
-//        _uiState.value = _uiState.value.copy(bVis = false)
+//        _uiStateDTO.value = _uiStateDTO.value.copy(bVis = false)
         val reqDVID = preferences.getString(REG_DVID, "") ?: ""
         val reqTKN = preferences.getString(REG_TKN, "") ?: ""
         val reqTYPEVD = preferences.getString(REG_TYPEDV, "")?.toIntOrNull() ?: 0
@@ -1268,11 +1266,11 @@ class MainViewModel @Inject constructor(
             while (isActive) {
 //                val uiStateFromDb = loadDataFromDBUseCase.execute()
                 val uiStateFromDb = dBRepository.getUiStates()
-                _uiStateList.value = uiStateFromDb
+                _uiStateDTOList.value = uiStateFromDb
 
                 uiStateFromDb.firstOrNull()?.let { newState ->
-                    if (_uiState.value.timedv != newState.timedv) {
-                        _uiState.value = newState
+                    if (_uiStateDTO.value.timedv != newState.timedv) {
+                        _uiStateDTO.value = newState
                         delay(2000)
                         _buttonGoVisib.value = true
                         counterBase = 0
