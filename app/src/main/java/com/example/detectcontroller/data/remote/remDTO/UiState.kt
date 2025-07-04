@@ -11,6 +11,7 @@ data class UiState(
     val rmode: String = "LoadLoad..",
     val gomode: String = "LoadLoad..",
     val modes: String = "LoadLoad..",
+    val online: String = "LoadLoad..",
 //    val bVis: Boolean ,
 //    val error: String? = null
 )

@@ -23,6 +23,7 @@ import com.example.detectcontroller.domain.server.CheckServerEventUseCase
 import com.example.detectcontroller.domain.server.DeleteEventServerUseCase
 import com.example.detectcontroller.domain.server.FetchDataUseCase
 import com.example.detectcontroller.ui.presentation.MainActivity
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
@@ -32,7 +33,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.random.Random
 
-
+@AndroidEntryPoint
 class ForegroundService : Service() {
 
     @Inject
