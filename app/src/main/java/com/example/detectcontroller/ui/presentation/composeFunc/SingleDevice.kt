@@ -152,7 +152,7 @@ fun SingleDevice(
                         Text(text = "состояние: ", style = MaterialTheme.typography.bodyMedium)
                         Text(
 //                            text = releStt.toString(),
-                            text = uiState.stt,
+                            text = uiState.stt.takeLast(1),
                             style = MaterialTheme.typography.bodyMedium,
                             color = Color.Red
                         )

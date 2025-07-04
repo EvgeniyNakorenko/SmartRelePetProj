@@ -1,9 +1,9 @@
 package com.example.detectcontroller.domain.models
 
 data class ErrorServerMod(
-    val id: Int,
-    val errorCode: Int,
-    val errorMessage: String,
-    val timestamp: Long,
-    val deviceId: String?
+    val id: Int = 0,
+    val errorCode: Int = 0,
+    val errorMessage: String = "0",
+    val timeev: String = "0",
+    val deviceId: String? = "0"
 )

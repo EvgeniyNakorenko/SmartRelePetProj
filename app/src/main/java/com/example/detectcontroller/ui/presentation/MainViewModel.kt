@@ -32,6 +32,7 @@ import com.example.detectcontroller.data.remote.remDTO.SendSettingsDTO
 import com.example.detectcontroller.data.remote.remDTO.StatusEventServerDTO
 import com.example.detectcontroller.data.remote.remDTO.UiStateDTO
 import com.example.detectcontroller.domain.DBRepository
+import com.example.detectcontroller.domain.models.ErrorServerMod
 import com.example.detectcontroller.domain.registration.RegGetDataWIFIUseCase
 import com.example.detectcontroller.domain.registration.RegSendDataWIFIUseCase
 import com.example.detectcontroller.domain.server.DeleteEventServerUseCase
@@ -57,6 +58,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 import kotlin.coroutines.cancellation.CancellationException
@@ -95,6 +97,7 @@ sealed class ScreenEvent {
     data class OpenScreenRel(val value: String) : ScreenEvent()
     data class LoadEventServerFromDB(val value: String) : ScreenEvent()
     data class LoadLastEventServerFromDB(val value: String) : ScreenEvent()
+    data class GetErrors(val value: String) : ScreenEvent()
 
 //    data class ShowEventAlarmI(val value: Boolean) : ScreenEvent()
 //    data class ShowEventAlarmU(val value: Boolean) : ScreenEvent()
@@ -132,10 +135,7 @@ class MainViewModel @Inject constructor(
     private val regSendDataWIFIUseCase = RegSendDataWIFIUseCase()
     private val deleteEventServerUseCase = DeleteEventServerUseCase()
     private val sendSettingsServerUseCase = SendSettingsServerUseCase()
-
     private val fetchDataUseCase = FetchDataUseCase()
-
-
     private val sendServerSettingsMode3UseCase = SendServerSettingsMode3UseCase()
     private val sendServerSettingsMode4UseCase = SendServerSettingsMode4UseCase()
     private val sendServerSettingsMode5UseCase = SendServerSettingsMode5UseCase()
@@ -229,7 +229,7 @@ class MainViewModel @Inject constructor(
 
     fun startEventsChecking(savedId: Int) {
         viewModelScope.launch {
-            while (screenState.value.currentScreen == DialogState.SCREEN_HOME) {
+            while (screenState.value.currentScreen == SCREEN_HOME) {
                 loadEvents()
                 checkEvents(savedId)
                 delay(3000)
@@ -266,6 +266,9 @@ class MainViewModel @Inject constructor(
     private val _uiStateDTO = MutableStateFlow(UiStateDTO())
     val uiStateDTO: StateFlow<UiStateDTO> = _uiStateDTO
 
+    private val _errorsListState = MutableStateFlow(listOf(ErrorServerMod()))
+    val errorsListState: StateFlow< List<ErrorServerMod>>  = _errorsListState
+
     private val _regState = MutableStateFlow(listOf(RegServerEntity()))
     val regState: StateFlow< List<RegServerEntity>> = _regState
 
@@ -298,7 +301,7 @@ class MainViewModel @Inject constructor(
     //    SETREL
     private val _textFieldValue1SETREL =
         mutableStateListOf(
-            preferences.getString(SETREL_TEXT_FIELD_VALUE1, "Name_device") ?: "Name_device"
+            preferences.getString(SETREL_TEXT_FIELD_VALUE1, "Имя устройства") ?: "Имя устройства"
         )
     val textFieldValue1SETREL: SnapshotStateList<String> = _textFieldValue1SETREL
     fun setTextFieldValue1SETREL(text: String) {
@@ -617,7 +620,9 @@ class MainViewModel @Inject constructor(
 
 
     init {
+
         createEvent(ScreenEvent.OpenScreenRel(""))
+        createEvent(ScreenEvent.GetErrors(""))
         if (!(preferences.getBoolean(RELE_MODE_GO, false) ?: false)) {
             set_releModeGO(false)
         } else set_releModeGO(true)
@@ -744,6 +749,10 @@ class MainViewModel @Inject constructor(
 
             is ScreenEvent.GetAllRegServerFromDB -> {
                 _regState.value = dBRepository.getAllRegServer()
+            }
+
+            is ScreenEvent.GetErrors -> {
+                _errorsListState.value = dBRepository.getAllErrors()
             }
         }
     }
@@ -1317,9 +1326,14 @@ class MainViewModel @Inject constructor(
                                             val currentInstant = Instant.now()
                                             val moscowTime =
                                                 currentInstant.atZone(ZoneId.of("Europe/Moscow"))
-                                            val formatter =
-                                                DateTimeFormatter.ofPattern("dd.MM.yyyy, HH:mm:ss")
-                                            val formattedTime = moscowTime.format(formatter)
+//                                            val formatter =
+//                                                DateTimeFormatter.ofPattern("dd.MM.yyyy, HH:mm:ss")
+                                            val zonedDateTime = ZonedDateTime.parse(moscowTime.toString())
+                                            val timestampSeconds = zonedDateTime.toEpochSecond()
+
+                                            val currentTimeInSeconds = System.currentTimeMillis() / 1000
+
+//                                            val formattedTime = moscowTime.format(formatter)
 //                                            saveEventServerInDBUseCase.execute(
 //                                                StatusEventServerDTO(
 //                                                    id = 1,
@@ -1329,15 +1343,26 @@ class MainViewModel @Inject constructor(
 //                                                    name = "${error.message}"
 //                                                )
 //                                            )
-                                            dBRepository.saveEventServerInDB(
-                                                StatusEventServerDTO(
-                                                    id = 1,
-                                                    timeev = "$formattedTime",
-                                                    rstate = "-1",
-                                                    value = "-1",
-                                                    name = "${error.message}"
-                                                )
-                                            )
+                                            dBRepository.insertError(ErrorServerMod(
+                                                id = 1,
+                                                errorCode = error.hashCode(),
+                                                errorMessage = "${error.message}",
+                                                timestamp = "$currentTimeInSeconds",
+//                                                timestamp = "$formattedTime",
+                                                deviceId = preferences.getString(REG_DVID ,"1")
+                                            ))
+
+//                                            dBRepository.saveEventServerInDB(
+//                                                StatusEventServerDTO(
+//                                                    id = 1,
+//                                                    timeev = "$formattedTime",
+//                                                    rstate = "-1",
+//                                                    value = "-1",
+//                                                    name = "${error.message}"
+//                                                )
+//                                            )
+                                            delay(100)
+                                            createEvent(ScreenEvent.GetErrors(""))
 
                                         }
                                         counterServ = 0

@@ -12,6 +12,9 @@ import com.example.detectcontroller.domain.models.ErrorServerMod
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 @Module
@@ -33,7 +36,7 @@ class DBRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getEventServerFromDB(): List<StatusEventServerDTO> {
-        return uiStateDao.getAllEventsServer().map { it.toDomain() }
+        return uiStateDao.getAllEventsServer().map { it.toDomain().apply { it.timeev = convertTime(it.timeev) } }
     }
 
     override suspend fun getOneLastEventServerFromDB(id: Int): StatusEventServerDTO? {
@@ -72,12 +75,21 @@ class DBRepositoryImpl @Inject constructor(
         uiStateDao.clearOldErrors(threshold)
     }
 
+    private fun convertTime(
+        dateTimeString: String,
+        zoneId: ZoneId = ZoneId.systemDefault()
+    ) : String {
+        val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")
+        val dateTime = LocalDateTime.parse(dateTimeString, formatter)
+        return dateTime.atZone(zoneId).toEpochSecond().toString()
+    }
+
     private fun ErrorEntity.toDomain(): ErrorServerMod {
         return ErrorServerMod(
             id = id,
             errorCode = errorCode,
             errorMessage = errorMessage,
-            timestamp = timestamp,
+            timeev = timeev,
             deviceId = deviceId
         )
     }
@@ -88,11 +100,10 @@ class DBRepositoryImpl @Inject constructor(
             id = id,
             errorCode = errorCode,
             errorMessage = errorMessage,
-            timestamp = timestamp,
+            timeev = timeev,
             deviceId = deviceId
         )
     }
-
 
 
     private fun UiStateDTO.toData(): UiStateEntity {

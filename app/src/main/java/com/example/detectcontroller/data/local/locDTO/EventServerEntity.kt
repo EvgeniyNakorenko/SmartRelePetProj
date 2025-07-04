@@ -6,8 +6,8 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "event_server")
 data class EventServerEntity(
     @PrimaryKey
-    val id: Int ,
-    val timeev: String,
+    val id: Int,
+    var timeev: String,
     val rstate: String,
     val value: String,
     val name: String,

@@ -38,7 +38,15 @@ fun Log(mainViewModel: MainViewModel , preferences: SharedPreferences) {
     ) {
         Text("Events log", style = MaterialTheme.typography.headlineMedium)
         val eventsListState by mainViewModel.eventServerList.collectAsState()
+        val errorsListState by mainViewModel.errorsListState.collectAsState()
+
         val itemsEvent = eventsListState.reversed()
+//        val itemsEvent = (eventsListState.map { event ->
+//            Pair(event.timeev, event)
+//        } + errorsListState.map { error ->
+//            Pair(error.timeev, error)
+//        }).sortedByDescending { it.first }
+//            .map { it.second }
 
 
         if (!itemsEvent.isNullOrEmpty()) {
