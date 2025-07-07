@@ -30,6 +30,9 @@ import com.example.detectcontroller.domain.models.ErrorServerMod
 import com.example.detectcontroller.ui.presentation.MainViewModel
 import com.example.detectcontroller.ui.presentation.ScreenEvent
 import com.example.detectcontroller.ui.presentation.composeFunc.DialogState
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 sealed class TimelineItem {
     abstract val time: String
@@ -62,14 +65,24 @@ fun Log(mainViewModel: MainViewModel, preferences: SharedPreferences) {
                 .reversed()
         }
 
+       fun formatUnixTime(
+            unixTime: Long,
+            pattern: String = "dd.MM.yyyy HH:mm:ss",
+            zoneId: ZoneId = ZoneId.systemDefault()
+        ): String {
+            val instant = Instant.ofEpochSecond(unixTime)
+            val formatter = DateTimeFormatter.ofPattern(pattern).withZone(zoneId)
+            return formatter.format(instant)
+        }
+
         if (!timelineItems.isNullOrEmpty()) {
-//        if (!itemsEvent.isNullOrEmpty()) {
 
-
-            preferences
-                .edit()
-                .putInt("SAVEDID", eventsListState.last().id)
-                .apply()
+            if (!eventsListState.isNullOrEmpty()) {
+                preferences
+                    .edit()
+                    .putInt("SAVEDID", eventsListState.last().id)
+                    .apply()
+            }
 
             LazyVerticalGrid(
                 columns = GridCells.Fixed(1),
@@ -98,8 +111,9 @@ fun Log(mainViewModel: MainViewModel, preferences: SharedPreferences) {
                             when (item) {
                                 is TimelineItem.EventItem ->{
                                     Column {
-                                        Text(text = "Event", color = Color.Black)
-                                        Text(text = "Time: ${item.event.timeev}", color = Color.Black)
+                                        Text(text = "Event ${item.event.id}", color = Color.Black)
+                                        Text(text = "Time: ${formatUnixTime(item.event.timeev.toLong())}", color = Color.Black)
+//                                        Text(text = "Time: ${item.event.timeev}", color = Color.Black)
                                         Text(text = "State: ${item.event.rstate}", color = Color.Black)
                                         Text(text = "Value: ${item.event.value}", color = Color.Black)
                                         Text(text = "Name: ${item.event.name}", color = Color.Black)
@@ -108,15 +122,15 @@ fun Log(mainViewModel: MainViewModel, preferences: SharedPreferences) {
 
                                 is TimelineItem.ErrorItem -> {
                                     Column {
-                                        Text(text = "Error", color = Color.Red)
-                                        Text(text = "Time: ${item.error.timeev}", color = Color.Black)
+                                        Text(text = "Error ${item.error.id}", color = Color.Red)
+                                        Text(text = "Time: ${formatUnixTime(item.error.timeev.toLong())}", color = Color.Black)
                                         Text(text = "Code: ${item.error.errorCode}", color = Color.Black)
                                         Text(
                                             text = "Message: ${item.error.errorMessage}",
                                             color = Color.Black
                                         )
                                         item.error?.let {
-                                            Text(text = "Device: $it", color = Color.Black)
+                                            Text(text = "Device: ${it.deviceId}", color = Color.Black)
                                         }
                                     }
                                 }

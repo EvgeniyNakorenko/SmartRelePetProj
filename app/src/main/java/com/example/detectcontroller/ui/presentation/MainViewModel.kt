@@ -1313,10 +1313,12 @@ class MainViewModel @Inject constructor(
                             val dataFromServer = loadReq?.let {
                                 fetchDataUseCase.execute(it)
                             }
+
                             if (dataFromServer?.isFailure == true) {
                                 if (counterErr == 0) {
                                     counterServ++
                                     if (counterServ == 4) {
+//                                        counterErr = 0
                                         counterErr = 1
                                         dataFromServer.onFailure { error ->
                                             error.printStackTrace()
@@ -1344,7 +1346,7 @@ class MainViewModel @Inject constructor(
 //                                                )
 //                                            )
                                             dBRepository.insertError(ErrorServerMod(
-                                                id = 1,
+//                                                id = 1,
                                                 errorCode = error.hashCode(),
                                                 errorMessage = "${error.message}",
                                                 timeev = "$currentTimeInSeconds",
