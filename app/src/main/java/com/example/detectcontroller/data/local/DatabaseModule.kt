@@ -23,7 +23,7 @@ object DatabaseModule {
             AppDatabase::class.java,
             "app_database"
         )
-            .addMigrations(AppDatabase.MIGRATION_3_4)
+//            .addMigrations(AppDatabase.MIGRATION_3_4)
             .fallbackToDestructiveMigrationOnDowngrade()
             .build()
     }

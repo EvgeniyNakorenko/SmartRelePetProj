@@ -54,7 +54,7 @@ interface UiStateDao {
     @Query("SELECT * FROM ErrorEntity ORDER BY id DESC LIMIT 20")
     fun getAllErrors(): List<ErrorEntity>
 
-    @Query("DELETE FROM ErrorEntity WHERE timestamp < :threshold")
+    @Query("DELETE FROM ErrorEntity WHERE timeev < :threshold")
     suspend fun clearOldErrors(threshold: Long)
     
     //errors

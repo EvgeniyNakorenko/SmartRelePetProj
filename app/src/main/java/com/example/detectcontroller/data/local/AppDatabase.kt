@@ -18,7 +18,7 @@ import com.example.detectcontroller.data.local.locDTO.UiStateEntity
         LastEventsServerEntity::class,
         ErrorEntity::class
     ],
-    version = 4,
+    version = 1,
     exportSchema = true
 )
 
@@ -29,20 +29,20 @@ abstract class AppDatabase : RoomDatabase() {
         @Volatile
         private var INSTANCE: AppDatabase? = null
 
-        val MIGRATION_3_4 = object : Migration(3, 4) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("""
-                    CREATE TABLE IF NOT EXISTS `ErrorEntity` (
-                        `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-                        `errorCode` INTEGER NOT NULL,
-                        `errorMessage` TEXT NOT NULL,
-                        `timestamp` INTEGER NOT NULL,
-                        `deviceId` TEXT
-                    )
-                """.trimIndent())
-            }
-
-        }
+//        val MIGRATION_3_4 = object : Migration(3, 4) {
+//            override fun migrate(database: SupportSQLiteDatabase) {
+//                database.execSQL("""
+//                    CREATE TABLE IF NOT EXISTS `ErrorEntity` (
+//                        `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+//                        `errorCode` INTEGER NOT NULL,
+//                        `errorMessage` TEXT NOT NULL,
+//                        `timestamp` INTEGER NOT NULL,
+//                        `deviceId` TEXT
+//                    )
+//                """.trimIndent())
+//            }
+//
+//        }
 
     }
 }

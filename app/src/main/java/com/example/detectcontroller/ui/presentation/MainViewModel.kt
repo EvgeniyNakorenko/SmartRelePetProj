@@ -1347,7 +1347,7 @@ class MainViewModel @Inject constructor(
                                                 id = 1,
                                                 errorCode = error.hashCode(),
                                                 errorMessage = "${error.message}",
-                                                timestamp = "$currentTimeInSeconds",
+                                                timeev = "$currentTimeInSeconds",
 //                                                timestamp = "$formattedTime",
                                                 deviceId = preferences.getString(REG_DVID ,"1")
                                             ))
