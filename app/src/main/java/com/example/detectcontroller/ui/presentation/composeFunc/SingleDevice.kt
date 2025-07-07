@@ -76,10 +76,9 @@ fun SingleDevice(
 //    var savedId : Int? = 0
 
     val savedId = preferences.getInt("SAVEDID", 0)
-    mainViewModel.startEventsChecking(savedId)
-//    LaunchedEffect(Unit) {
-//        mainViewModel.startEventsChecking(savedId)
-//    }
+    LaunchedEffect(savedId) {
+        mainViewModel.startEventsChecking(savedId)
+    }
 
     val isVisibleAlertU by mainViewModel.isVisibleAlertU.collectAsState()
     val isVisibleAlertI by mainViewModel.isVisibleAlertI.collectAsState()

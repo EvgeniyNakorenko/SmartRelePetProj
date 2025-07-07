@@ -111,12 +111,13 @@ fun Log(mainViewModel: MainViewModel, preferences: SharedPreferences) {
                             when (item) {
                                 is TimelineItem.EventItem ->{
                                     Column {
-                                        Text(text = "Event ${item.event.id}", color = Color.Black)
+                                        Text(text = "Event ${item.event.id}", color = Color.Red)
                                         Text(text = "Time: ${formatUnixTime(item.event.timeev.toLong())}", color = Color.Black)
+//                                        Text(text = "Event ${item.event.id}", color = Color.Black)
 //                                        Text(text = "Time: ${item.event.timeev}", color = Color.Black)
-                                        Text(text = "State: ${item.event.rstate}", color = Color.Black)
+//                                        Text(text = "State: ${item.event.rstate}", color = Color.Black)
                                         Text(text = "Value: ${item.event.value}", color = Color.Black)
-                                        Text(text = "Name: ${item.event.name}", color = Color.Black)
+//                                        Text(text = "Name: ${item.event.name}", color = Color.Black)
                                     }
                                 }
 
@@ -124,27 +125,12 @@ fun Log(mainViewModel: MainViewModel, preferences: SharedPreferences) {
                                     Column {
                                         Text(text = "Error ${item.error.id}", color = Color.Red)
                                         Text(text = "Time: ${formatUnixTime(item.error.timeev.toLong())}", color = Color.Black)
-                                        Text(text = "Code: ${item.error.errorCode}", color = Color.Black)
-                                        Text(
-                                            text = "Message: ${item.error.errorMessage}",
-                                            color = Color.Black
-                                        )
-                                        item.error?.let {
-                                            Text(text = "Device: ${it.deviceId}", color = Color.Black)
-                                        }
+                                        Text(text = "Ошибка сервера", color = Color.Black)
+//
                                     }
                                 }
                             }
-////                                        Text(text = item.toString(), color = Color.Black)
-//                            Text(text = "Event", color = Color.Black)
-//
-//                            Text(text = "Time: ${item.timeev}", color = Color.Black)
-//                            Text(
-//                                text = "State: ${item.rstate}",
-//                                color = Color.Black
-//                            )
-//                            Text(text = "Value: ${item.value}", color = Color.Black)
-//                            Text(text = "Name: ${item.name}", color = Color.Black)
+
                         }
                     }
                 }

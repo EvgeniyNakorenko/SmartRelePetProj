@@ -36,7 +36,8 @@ class DBRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getEventServerFromDB(): List<StatusEventServerDTO> {
-        return uiStateDao.getAllEventsServer().map { it.toDomain().apply { it.timeev = convertTime(it.timeev) } }
+        return uiStateDao.getAllEventsServer().map { it.toDomain()}
+//        return uiStateDao.getAllEventsServer().map { it.toDomain().apply { it.timeev = convertTime(it.timeev) } }
     }
 
     override suspend fun getOneLastEventServerFromDB(id: Int): StatusEventServerDTO? {

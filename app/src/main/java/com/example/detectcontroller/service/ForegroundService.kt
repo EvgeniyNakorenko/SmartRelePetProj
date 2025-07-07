@@ -23,6 +23,11 @@ import com.example.detectcontroller.domain.server.CheckServerEventUseCase
 import com.example.detectcontroller.domain.server.DeleteEventServerUseCase
 import com.example.detectcontroller.domain.server.FetchDataUseCase
 import com.example.detectcontroller.ui.presentation.MainActivity
+import com.example.detectcontroller.ui.presentation.MainViewModel.Companion.I_TEXT_FIELD_VALUE1
+import com.example.detectcontroller.ui.presentation.MainViewModel.Companion.I_TEXT_FIELD_VALUE2
+import com.example.detectcontroller.ui.presentation.MainViewModel.Companion.P_TEXT_FIELD_VALUE1
+import com.example.detectcontroller.ui.presentation.MainViewModel.Companion.U_TEXT_FIELD_VALUE1
+import com.example.detectcontroller.ui.presentation.MainViewModel.Companion.U_TEXT_FIELD_VALUE2
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -30,6 +35,9 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 import kotlin.random.Random
 
@@ -43,16 +51,6 @@ class ForegroundService : Service() {
     private var isStarted = false
     private val scope = CoroutineScope(Dispatchers.Default)
     private val fetchDataUseCase = FetchDataUseCase()
-
-//     lateinit var database: AppDatabase
-//    private lateinit var saveDataInDBUseCase: SaveDataInDBUseCase
-
-    //    private lateinit var saveEventUseCase: SaveEventServerInDBUseCase
-//    private lateinit var loadLastEventServerFromDBUseCase: LoadLastEventServerFromDBUseCase
-
-    //    private lateinit var getOneLastEventServerFromDBUseCase: GetOneLastEventServerFromDBUseCase
-//    private lateinit var getAllRegServerFromDBUseCase: GetAllRegServerFromDBUseCase
-    private lateinit var insertLastEventServerInDBUseCase: InsertLastEventServerInDBUseCase
     private lateinit var deleteEventServerUseCase: DeleteEventServerUseCase
     private lateinit var checkServerEventUseCase: CheckServerEventUseCase
     private lateinit var preferences: SharedPreferences
@@ -65,14 +63,7 @@ class ForegroundService : Service() {
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         preferences = application.getSharedPreferences(REL_SETTINGS, Context.MODE_PRIVATE)
         goModeOff = preferences.getBoolean(RELE_MODE_GO, false) ?: false
-//        database = AppDatabase.getDatabase(this)
-//        saveDataInDBUseCase = SaveDataInDBUseCase(database)
 
-//        saveEventUseCase = SaveEventServerInDBUseCase(database)
-//        loadLastEventServerFromDBUseCase = LoadLastEventServerFromDBUseCase(database)
-//        getOneLastEventServerFromDBUseCase = GetOneLastEventServerFromDBUseCase(database)
-//        getAllRegServerFromDBUseCase = GetAllRegServerFromDBUseCase(database)
-//        insertLastEventServerInDBUseCase = InsertLastEventServerInDBUseCase(database)
         checkServerEventUseCase = CheckServerEventUseCase()
         deleteEventServerUseCase = DeleteEventServerUseCase()
         deviceData = getGegData("rs")
@@ -173,17 +164,70 @@ class ForegroundService : Service() {
                     val event = loadReq?.let { checkServerEventUseCase.execute(it) }
                     delay(10)
 
+                    fun convertToUnixTimestamp(dateTimeString: String): Long {
+                        // Формат для "день-месяц-год час:минута:секунда"
+                        val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")
+                        val localDateTime = LocalDateTime.parse(dateTimeString, formatter)
+                        return localDateTime.atZone(ZoneId.systemDefault()).toEpochSecond()
+                    }
+
                     event?.onSuccess { res ->
+                        res.value = res.value.drop(3)
+                        res.timeev = convertToUnixTimestamp(res.timeev).toString()
+                        when (res.name) {
+
+                            "evi" -> {
+
+                                val minValue = preferences.getFloat(I_TEXT_FIELD_VALUE1, 1f)
+                                val maxValue = preferences.getFloat(I_TEXT_FIELD_VALUE2, 1f)
+                                when  {
+                                    minValue > res.value.toFloat() -> res.value = "${res.value} Ампер. ЗНАЧЕНИЕ НИЖЕ НОРМЫ.\n" +
+                                            "ЗАЩИТА ПО ТОКУ."
+                                    maxValue < res.value.toFloat() -> res.value = "${res.value} Ампер. ЗНАЧЕНИЕ ВЫШЕ НОРМЫ.\n" +
+                                            "ЗАЩИТА ПО ТОКУ."
+                                }
+
+                            }
+
+                            "evu" -> {
+                                val minValue = preferences.getFloat(U_TEXT_FIELD_VALUE1, 1f)
+                                val maxValue = preferences.getFloat(U_TEXT_FIELD_VALUE2, 1f)
+                                when  {
+                                    minValue > res.value.toFloat() -> res.value = "${res.value} Вольт. ЗНАЧЕНИЕ НИЖЕ НОРМЫ.\n" +
+                                            "ЗАЩИТА ПО НАПРЯЖЕНИЮ."
+                                    maxValue < res.value.toFloat() -> res.value = "${res.value} Вольт. ЗНАЧЕНИЕ ВЫШЕ НОРМЫ.\n" +
+                                            "ЗАЩИТА ПО НАПРЯЖЕНИЮ."
+                                }
+                            }
+
+                            "evp" -> {
+                                val maxValue = preferences.getInt(P_TEXT_FIELD_VALUE1, 1)
+                                when  {
+
+                                    maxValue < res.value.toInt() -> res.value = "${res.value} Ватт. ЗНАЧЕНИЕ ВЫШЕ НОРМЫ.\n" +
+                                            "ЗАЩИТА ПО МОЩНОСТИ."
+                                }
+                            }
+
+                            "evt" -> {
+
+                            }
+                        }
+
+//                        preferences.getFloat(I_TEXT_FIELD_VALUE1
+
 
                         dBRepository.saveEventServerInDB(res)
 //                        saveEventUseCase.execute(res)
-                        dBRepository.insertLastEventServerDB( LastEventsServerEntity(
-                            id = res.id,
-                            timeev = res.timeev,
-                            rstate = res.rstate,
-                            value = res.value,
-                            name = res.name
-                        ))
+                        dBRepository.insertLastEventServerDB(
+                            LastEventsServerEntity(
+                                id = res.id,
+                                timeev = res.timeev,
+                                rstate = res.rstate,
+                                value = res.value,
+                                name = res.name
+                            )
+                        )
 //                        insertLastEventServerInDBUseCase.execute(
 //                            LastEventsServerEntity(
 //                                id = res.id,
@@ -206,8 +250,6 @@ class ForegroundService : Service() {
 
                         if (res.name != "gomode") {
                             showNotification("Внимание, новое событие", res.toString())
-
-
 
                             deleteEventServerUseCase.execute(
                                 deleteEventDTO = DeleteEventDTO(

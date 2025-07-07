@@ -123,14 +123,14 @@ sealed class ScreenEvent {
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-     application: Application,
+    application: Application,
     private val dBRepository: DBRepository
 
 ) : ViewModel() {
 
     @SuppressLint("StaticFieldLeak")
     private val contextIn = application.applicationContext
-//    private val contextIn = context
+    //    private val contextIn = context
     private val regGetDataWIFIUseCase = RegGetDataWIFIUseCase()
     private val regSendDataWIFIUseCase = RegSendDataWIFIUseCase()
     private val deleteEventServerUseCase = DeleteEventServerUseCase()
@@ -248,9 +248,16 @@ class MainViewModel @Inject constructor(
             .take(20)
             .forEach { event ->
                 when (event.name) {
-                    "evu" -> if (event.id > savedId) _isVisibleAlertU.value = true
-                    "evi" -> if (event.id > savedId) _isVisibleAlertI.value = true
-                    "evp" -> if (event.id > savedId) _isVisibleAlertP.value = true
+                    "evu" -> if (event.id > savedId) {
+                        _isVisibleAlertU.value = true
+                    } else _isVisibleAlertU.value = false
+
+                    "evi" -> if (event.id > savedId) _isVisibleAlertI.value =
+                        true else _isVisibleAlertI.value = false
+
+                    "evp" -> if (event.id > savedId) _isVisibleAlertP.value =
+                        true else _isVisibleAlertP.value = false
+
                     "gomode" -> createEvent(ScreenEvent.DeleteEventAlarmFromServer(""))
                 }
             }
@@ -267,10 +274,10 @@ class MainViewModel @Inject constructor(
     val uiStateDTO: StateFlow<UiStateDTO> = _uiStateDTO
 
     private val _errorsListState = MutableStateFlow(listOf(ErrorServerMod()))
-    val errorsListState: StateFlow< List<ErrorServerMod>>  = _errorsListState
+    val errorsListState: StateFlow<List<ErrorServerMod>> = _errorsListState
 
     private val _regState = MutableStateFlow(listOf(RegServerEntity()))
-    val regState: StateFlow< List<RegServerEntity>> = _regState
+    val regState: StateFlow<List<RegServerEntity>> = _regState
 
     // Новый StateFlow для хранения списка последних 10 значений UiStateDTO
     private val _uiStateDTOList = MutableStateFlow<List<UiStateDTO>>(emptyList())
@@ -740,6 +747,11 @@ class MainViewModel @Inject constructor(
 
             is ScreenEvent.ShowScreen -> {
                 _screenState.value = _screenState.value.copy(currentScreen = event.value)
+                if (_screenState.value.dialogState == DialogState.SCREEN_LOG) {
+                    _isVisibleAlertU.value = false
+                    _isVisibleAlertI.value = false
+                    _isVisibleAlertP.value = false
+                }
             }
 
             is ScreenEvent.SendServerStopMode -> {
@@ -1306,7 +1318,7 @@ class MainViewModel @Inject constructor(
                                     reqTKN,
                                     reqTYPEVD,
                                     reqNUM,
-                                    "rss",
+                                    "rs",
 //                                    event?.id ?: 0
                                 )
 
@@ -1318,51 +1330,26 @@ class MainViewModel @Inject constructor(
                                 if (counterErr == 0) {
                                     counterServ++
                                     if (counterServ == 4) {
-//                                        counterErr = 0
                                         counterErr = 1
                                         dataFromServer.onFailure { error ->
                                             error.printStackTrace()
                                             showToast("Ошибка сервера")
                                             showToast("${error.message}")
 
-                                            val currentInstant = Instant.now()
-                                            val moscowTime =
-                                                currentInstant.atZone(ZoneId.of("Europe/Moscow"))
-//                                            val formatter =
-//                                                DateTimeFormatter.ofPattern("dd.MM.yyyy, HH:mm:ss")
-                                            val zonedDateTime = ZonedDateTime.parse(moscowTime.toString())
-                                            val timestampSeconds = zonedDateTime.toEpochSecond()
+                                            val currentTimeInSeconds =
+                                                System.currentTimeMillis() / 1000
 
-                                            val currentTimeInSeconds = System.currentTimeMillis() / 1000
-
-//                                            val formattedTime = moscowTime.format(formatter)
-//                                            saveEventServerInDBUseCase.execute(
-//                                                StatusEventServerDTO(
-//                                                    id = 1,
-//                                                    timeev = "$formattedTime",
-//                                                    rstate = "-1",
-//                                                    value = "-1",
-//                                                    name = "${error.message}"
-//                                                )
-//                                            )
-                                            dBRepository.insertError(ErrorServerMod(
+                                            dBRepository.insertError(
+                                                ErrorServerMod(
 //                                                id = 1,
-                                                errorCode = error.hashCode(),
-                                                errorMessage = "${error.message}",
-                                                timeev = "$currentTimeInSeconds",
+                                                    errorCode = error.hashCode(),
+                                                    errorMessage = "${error.message}",
+                                                    timeev = "$currentTimeInSeconds",
 //                                                timestamp = "$formattedTime",
-                                                deviceId = preferences.getString(REG_DVID ,"1")
-                                            ))
+                                                    deviceId = preferences.getString(REG_DVID, "1")
+                                                )
+                                            )
 
-//                                            dBRepository.saveEventServerInDB(
-//                                                StatusEventServerDTO(
-//                                                    id = 1,
-//                                                    timeev = "$formattedTime",
-//                                                    rstate = "-1",
-//                                                    value = "-1",
-//                                                    name = "${error.message}"
-//                                                )
-//                                            )
                                             delay(100)
                                             createEvent(ScreenEvent.GetErrors(""))
 
