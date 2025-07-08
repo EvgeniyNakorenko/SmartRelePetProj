@@ -51,10 +51,10 @@ sealed class TimelineItem {
 fun Log(mainViewModel: MainViewModel, preferences: SharedPreferences) {
     mainViewModel.createEvent(ScreenEvent.ShowScreen(DialogState.SCREEN_LOG))
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().padding(12.dp),
         contentAlignment = Alignment.Center
     ) {
-        Text("Events log", style = MaterialTheme.typography.headlineMedium)
+        Text("Журнал событий", style = MaterialTheme.typography.headlineMedium)
         val eventsListState by mainViewModel.eventServerList.collectAsState()
         val errorsListState by mainViewModel.errorsListState.collectAsState()
 
@@ -78,6 +78,7 @@ fun Log(mainViewModel: MainViewModel, preferences: SharedPreferences) {
         if (!timelineItems.isNullOrEmpty()) {
 
             if (!eventsListState.isNullOrEmpty()) {
+
                 preferences
                     .edit()
                     .putInt("SAVEDID", eventsListState.last().id)
@@ -98,14 +99,12 @@ fun Log(mainViewModel: MainViewModel, preferences: SharedPreferences) {
                             .fillMaxHeight()
                             .clip(RoundedCornerShape(8.dp))
                             .background(Color.LightGray)
-//                                            .padding(8.dp)
                     ) {
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(8.dp)
                                 .background(Color.LightGray)
-//                                                .clip(RoundedCornerShape(8.dp))
 
                         ) {
                             when (item) {
@@ -113,11 +112,7 @@ fun Log(mainViewModel: MainViewModel, preferences: SharedPreferences) {
                                     Column {
                                         Text(text = "Event ${item.event.id}", color = Color.Red)
                                         Text(text = "Time: ${formatUnixTime(item.event.timeev.toLong())}", color = Color.Black)
-//                                        Text(text = "Event ${item.event.id}", color = Color.Black)
-//                                        Text(text = "Time: ${item.event.timeev}", color = Color.Black)
-//                                        Text(text = "State: ${item.event.rstate}", color = Color.Black)
                                         Text(text = "Value: ${item.event.value}", color = Color.Black)
-//                                        Text(text = "Name: ${item.event.name}", color = Color.Black)
                                     }
                                 }
 

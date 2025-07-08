@@ -16,10 +16,6 @@ import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.POST
 
-//interface ApiService {
-//    @POST("qsapi/sen")
-//    fun sendData(@Body requestDataDTO: RequestDataDTO): Call<ResponseBody>
-//}
 
 interface ApiService {
     @POST("qsapi/sen")

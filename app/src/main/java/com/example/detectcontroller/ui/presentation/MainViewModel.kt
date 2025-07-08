@@ -1385,12 +1385,15 @@ class MainViewModel @Inject constructor(
 //                val lastEvent =
 //                    getOneLastEventServerFromDBUseCase.execute(savedEventPrefsID)
 
-                val lastEvent = dBRepository.getOneLastEventServerFromDB(savedEventPrefsID)
-                if (lastEvent != null) {
-                    _finalEventState.value = lastEvent
-                } else {
-                    _finalEventState.value = StatusEventServerDTO()
+                if (savedEventPrefsID != 0){
+                    val lastEvent = dBRepository.getOneLastEventServerFromDB(savedEventPrefsID)
+                    if (lastEvent != null) {
+                        _finalEventState.value = lastEvent
+                    } else {
+                        _finalEventState.value = StatusEventServerDTO()
+                    }
                 }
+
             } catch (e: Exception) {
                 e.printStackTrace()
             }

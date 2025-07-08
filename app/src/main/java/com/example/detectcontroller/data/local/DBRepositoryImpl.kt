@@ -1,5 +1,6 @@
 package com.example.detectcontroller.data.local
 
+import co.yml.charts.common.extensions.isNotNull
 import com.example.detectcontroller.data.local.locDTO.ErrorEntity
 import com.example.detectcontroller.data.local.locDTO.EventServerEntity
 import com.example.detectcontroller.data.local.locDTO.LastEventsServerEntity
@@ -36,12 +37,13 @@ class DBRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getEventServerFromDB(): List<StatusEventServerDTO> {
-        return uiStateDao.getAllEventsServer().map { it.toDomain()}
+        return uiStateDao.getAllEventsServer().map { it.toDomain() }
 //        return uiStateDao.getAllEventsServer().map { it.toDomain().apply { it.timeev = convertTime(it.timeev) } }
     }
 
-    override suspend fun getOneLastEventServerFromDB(id: Int): StatusEventServerDTO? {
-        return uiStateDao.getOneLastEventServer(id).toDomain()
+    override suspend fun getOneLastEventServerFromDB(id: Int?): StatusEventServerDTO? {
+        if (id.isNotNull()) return uiStateDao.getOneLastEventServer(id).toDomain() else return null
+
     }
 
     override suspend fun saveEventServerInDB(statusEventServerDTO: StatusEventServerDTO) {
@@ -74,15 +76,6 @@ class DBRepositoryImpl @Inject constructor(
 
     override suspend fun clearOldErrors(threshold: Long) {
         uiStateDao.clearOldErrors(threshold)
-    }
-
-    private fun convertTime(
-        dateTimeString: String,
-        zoneId: ZoneId = ZoneId.systemDefault()
-    ) : String {
-        val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")
-        val dateTime = LocalDateTime.parse(dateTimeString, formatter)
-        return dateTime.atZone(zoneId).toEpochSecond().toString()
     }
 
     private fun ErrorEntity.toDomain(): ErrorServerMod {

@@ -138,6 +138,7 @@ class ForegroundService : Service() {
             var regData: RegServerEntity? = null
 
             while (isActive) {
+
                 try {
                     val requestEv: RequestDataDTO
 
@@ -150,84 +151,94 @@ class ForegroundService : Service() {
                         }
                     }
 
-                    if (!regData.isNotNull()) println("no regData")
-                    val loadReq = regData?.let {
-                        RequestDataDTO(
-                            dvid = regData.dvid,
-                            tkn = regData.tkn,
-                            typedv = regData.typedv,
-                            num = regData.num,
-                            com = "rev"
-                        )
-                    }
+                    if (!regData.isNotNull()) {
+                        println("no regData")
+                    } else {
 
-                    val event = loadReq?.let { checkServerEventUseCase.execute(it) }
-                    delay(10)
 
-                    fun convertToUnixTimestamp(dateTimeString: String): Long {
-                        // Формат для "день-месяц-год час:минута:секунда"
-                        val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")
-                        val localDateTime = LocalDateTime.parse(dateTimeString, formatter)
-                        return localDateTime.atZone(ZoneId.systemDefault()).toEpochSecond()
-                    }
-
-                    event?.onSuccess { res ->
-                        res.value = res.value.drop(3)
-                        res.timeev = convertToUnixTimestamp(res.timeev).toString()
-                        when (res.name) {
-
-                            "evi" -> {
-
-                                val minValue = preferences.getFloat(I_TEXT_FIELD_VALUE1, 1f)
-                                val maxValue = preferences.getFloat(I_TEXT_FIELD_VALUE2, 1f)
-                                when  {
-                                    minValue > res.value.toFloat() -> res.value = "${res.value} Ампер. ЗНАЧЕНИЕ НИЖЕ НОРМЫ.\n" +
-                                            "ЗАЩИТА ПО ТОКУ."
-                                    maxValue < res.value.toFloat() -> res.value = "${res.value} Ампер. ЗНАЧЕНИЕ ВЫШЕ НОРМЫ.\n" +
-                                            "ЗАЩИТА ПО ТОКУ."
-                                }
-
-                            }
-
-                            "evu" -> {
-                                val minValue = preferences.getFloat(U_TEXT_FIELD_VALUE1, 1f)
-                                val maxValue = preferences.getFloat(U_TEXT_FIELD_VALUE2, 1f)
-                                when  {
-                                    minValue > res.value.toFloat() -> res.value = "${res.value} Вольт. ЗНАЧЕНИЕ НИЖЕ НОРМЫ.\n" +
-                                            "ЗАЩИТА ПО НАПРЯЖЕНИЮ."
-                                    maxValue < res.value.toFloat() -> res.value = "${res.value} Вольт. ЗНАЧЕНИЕ ВЫШЕ НОРМЫ.\n" +
-                                            "ЗАЩИТА ПО НАПРЯЖЕНИЮ."
-                                }
-                            }
-
-                            "evp" -> {
-                                val maxValue = preferences.getInt(P_TEXT_FIELD_VALUE1, 1)
-                                when  {
-
-                                    maxValue < res.value.toInt() -> res.value = "${res.value} Ватт. ЗНАЧЕНИЕ ВЫШЕ НОРМЫ.\n" +
-                                            "ЗАЩИТА ПО МОЩНОСТИ."
-                                }
-                            }
-
-                            "evt" -> {
-
-                            }
+                        val loadReq = regData?.let {
+                            RequestDataDTO(
+                                dvid = regData.dvid,
+                                tkn = regData.tkn,
+                                typedv = regData.typedv,
+                                num = regData.num,
+                                com = "rev"
+                            )
                         }
+
+                        val event = loadReq?.let { checkServerEventUseCase.execute(it) }
+                        delay(10)
+
+                        fun convertToUnixTimestamp(dateTimeString: String): Long {
+                            // Формат для "день-месяц-год час:минута:секунда"
+                            val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")
+                            val localDateTime = LocalDateTime.parse(dateTimeString, formatter)
+                            return localDateTime.atZone(ZoneId.systemDefault()).toEpochSecond()
+                        }
+
+                        event?.onSuccess { res ->
+                            res.value = res.value.drop(3)
+                            res.timeev = convertToUnixTimestamp(res.timeev).toString()
+                            when (res.name) {
+
+                                "evi" -> {
+
+                                    val minValue = preferences.getFloat(I_TEXT_FIELD_VALUE1, 1f)
+                                    val maxValue = preferences.getFloat(I_TEXT_FIELD_VALUE2, 1f)
+                                    when {
+                                        minValue > res.value.toFloat() -> res.value =
+                                            "${res.value} Ампер. ЗНАЧЕНИЕ НИЖЕ НОРМЫ.\n" +
+                                                    "ЗАЩИТА ПО ТОКУ."
+
+                                        maxValue < res.value.toFloat() -> res.value =
+                                            "${res.value} Ампер. ЗНАЧЕНИЕ ВЫШЕ НОРМЫ.\n" +
+                                                    "ЗАЩИТА ПО ТОКУ."
+                                    }
+
+                                }
+
+                                "evu" -> {
+                                    val minValue = preferences.getFloat(U_TEXT_FIELD_VALUE1, 1f)
+                                    val maxValue = preferences.getFloat(U_TEXT_FIELD_VALUE2, 1f)
+                                    when {
+                                        minValue > res.value.toFloat() -> res.value =
+                                            "${res.value} Вольт. ЗНАЧЕНИЕ НИЖЕ НОРМЫ.\n" +
+                                                    "ЗАЩИТА ПО НАПРЯЖЕНИЮ."
+
+                                        maxValue < res.value.toFloat() -> res.value =
+                                            "${res.value} Вольт. ЗНАЧЕНИЕ ВЫШЕ НОРМЫ.\n" +
+                                                    "ЗАЩИТА ПО НАПРЯЖЕНИЮ."
+                                    }
+                                }
+
+                                "evp" -> {
+                                    val maxValue = preferences.getInt(P_TEXT_FIELD_VALUE1, 1)
+                                    when {
+
+                                        maxValue < res.value.toInt() -> res.value =
+                                            "${res.value} Ватт. ЗНАЧЕНИЕ ВЫШЕ НОРМЫ.\n" +
+                                                    "ЗАЩИТА ПО МОЩНОСТИ."
+                                    }
+                                }
+
+                                "evt" -> {
+
+                                }
+                            }
 
 //                        preferences.getFloat(I_TEXT_FIELD_VALUE1
 
 
-                        dBRepository.saveEventServerInDB(res)
-//                        saveEventUseCase.execute(res)
-                        dBRepository.insertLastEventServerDB(
-                            LastEventsServerEntity(
-                                id = res.id,
-                                timeev = res.timeev,
-                                rstate = res.rstate,
-                                value = res.value,
-                                name = res.name
+                            dBRepository.saveEventServerInDB(res)
+                            dBRepository.insertLastEventServerDB(
+                                LastEventsServerEntity(
+                                    id = res.id,
+                                    timeev = res.timeev,
+                                    rstate = res.rstate,
+                                    value = res.value,
+                                    name = res.name
+                                )
                             )
-                        )
 //                        insertLastEventServerInDBUseCase.execute(
 //                            LastEventsServerEntity(
 //                                id = res.id,
@@ -237,35 +248,35 @@ class ForegroundService : Service() {
 //                                name = res.name
 //                            )
 //                        )
-                        delay(10)
+                            delay(10)
 
-                        preferences
-                            .edit()
-                            .putInt("EVENT_ID", res.id)
-                            .putString("EVENT_VALUE", res.value)
-                            .putString("EVENT_NAME", res.name)
-                            .putString("EVENT_RSTATE", res.rstate)
-                            .putString("EVENT_TIMEEV", res.timeev)
-                            .apply()
+                            preferences
+                                .edit()
+                                .putInt("EVENT_ID", res.id)
+                                .putString("EVENT_VALUE", res.value)
+                                .putString("EVENT_NAME", res.name)
+                                .putString("EVENT_RSTATE", res.rstate)
+                                .putString("EVENT_TIMEEV", res.timeev)
+                                .apply()
 
-                        if (res.name != "gomode") {
-                            showNotification("Внимание, новое событие", res.toString())
+                            if (res.name != "gomode") {
+                                showNotification("Внимание, новое событие", res.toString())
 
-                            deleteEventServerUseCase.execute(
-                                deleteEventDTO = DeleteEventDTO(
-                                    dvid = loadReq.dvid,
-                                    tkn = loadReq.tkn,
-                                    typedv = loadReq.typedv,
-                                    num = loadReq.num,
-                                    com = "del",
-                                    id = res.id
-                                )
-                            ).onSuccess { println("Событие удалено") }
+                                deleteEventServerUseCase.execute(
+                                    deleteEventDTO = DeleteEventDTO(
+                                        dvid = loadReq.dvid,
+                                        tkn = loadReq.tkn,
+                                        typedv = loadReq.typedv,
+                                        num = loadReq.num,
+                                        com = "del",
+                                        id = res.id
+                                    )
+                                ).onSuccess { println("Событие удалено") }
+                            }
+
+                        }?.onFailure { error ->
+                            error.printStackTrace()
                         }
-
-//                        }
-                    }?.onFailure { error ->
-                        error.printStackTrace()
                     }
                     delay(3000)
                 } catch (e: Exception) {

@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "last_event_server")
 data class LastEventsServerEntity(
     @PrimaryKey
-    val id: Int,
+    val id: Int = 0,
     val timeev: String,
     val rstate: String,
     val value: String,

@@ -40,7 +40,7 @@ interface UiStateDao {
     suspend fun getAllRegServer(): List<RegServerEntity>
 
     @Query("SELECT * FROM last_event_server WHERE id = :id")
-    suspend fun getOneLastEventServer(id: Int): LastEventsServerEntity
+    suspend fun getOneLastEventServer(id: kotlin.Int?): LastEventsServerEntity
 
     @Query("DELETE FROM last_event_server WHERE id = :id")
     suspend fun deleteLastEventServerById(id: Int)

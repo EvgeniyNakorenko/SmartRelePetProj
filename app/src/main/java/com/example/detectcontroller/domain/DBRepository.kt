@@ -13,7 +13,7 @@ interface DBRepository {
     suspend fun deleteLastEventServerById(id: Int)
     suspend fun deleteLastEventDBById(id: Int)
     suspend fun getEventServerFromDB(): List<StatusEventServerDTO>
-    suspend fun getOneLastEventServerFromDB(id: Int): StatusEventServerDTO?
+    suspend fun getOneLastEventServerFromDB(id: Int?): StatusEventServerDTO?
     suspend fun saveEventServerInDB(statusEventServerDTO: StatusEventServerDTO)
     suspend fun insertRegServer(regServerEntity: RegServerEntity)
     suspend fun getAllRegServer(): List<RegServerEntity>

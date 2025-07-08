@@ -1,7 +1,9 @@
-package com.example.detectcontroller.data.local
+package com.example.detectcontroller.di.modules
 
 import android.content.Context
 import androidx.room.Room
+import com.example.detectcontroller.data.local.AppDatabase
+import com.example.detectcontroller.data.local.UiStateDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

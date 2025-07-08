@@ -55,6 +55,9 @@ import com.example.detectcontroller.ui.presentation.MainViewModel.Companion.U_TE
 import com.example.detectcontroller.ui.presentation.ScreenEvent
 import com.example.detectcontroller.ui.presentation.utils.Item
 import com.example.detectcontroller.ui.presentation.utils.Screen
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 
 
 @Composable
@@ -64,18 +67,10 @@ fun SingleDevice(
     navController: NavHostController
 ) {
 
-
     val uiState by mainViewModel.uiStateDTO.collectAsState()
-//    var bVis = remember { preferences.getBoolean(B_VIS,true)}
-    val bVis = remember { mutableStateOf(preferences.getBoolean(B_VIS, true)) }
     val releModeGoVisVal by mainViewModel.buttonGoVisib.collectAsState()
-    val isCheckedVar by mainViewModel.releModeGO.collectAsState()
-    val eventsListState by mainViewModel.eventServerList.collectAsState()
-//    val releStt by mainViewModel.releStt.collectAsState()
+    val savedId by preferences.getIntFlow("SAVEDID", 0).collectAsState(initial = 0)
 
-//    var savedId : Int? = 0
-
-    val savedId = preferences.getInt("SAVEDID", 0)
     LaunchedEffect(savedId) {
         mainViewModel.startEventsChecking(savedId)
     }
@@ -85,7 +80,6 @@ fun SingleDevice(
     val isVisibleAlertP by mainViewModel.isVisibleAlertP.collectAsState()
 
     val releName = mainViewModel.textFieldValue1SETREL.last().toString()
-    val releMode = mainViewModel.releModeValue.last()
 
     Column {
         Box(
@@ -126,11 +120,7 @@ fun SingleDevice(
                             }
                             "6" -> mainViewModel.createEvent(ScreenEvent.SendServerStopMode(""))
                         }
-//                        if (uiStateDTO.modes != "1" && uiStateDTO.modes != "6") {
-//                            mainViewModel.createEvent(ScreenEvent.SendServerGoMode(""))
-//                        } else {
-//                            mainViewModel.createEvent(ScreenEvent.SendServerStopMode(""))
-//                        }
+
                     },
                     enabled = releModeGoVisVal,
                 )
@@ -147,11 +137,9 @@ fun SingleDevice(
                         text = "режим: ${uiState.rmode}",
                         style = MaterialTheme.typography.bodyMedium
                     )
-//                    Text(text = "режим: $releMode", style = MaterialTheme.typography.bodyMedium)
                     Row {
                         Text(text = "состояние: ", style = MaterialTheme.typography.bodyMedium)
                         Text(
-//                            text = releStt.toString(),
                             text = uiState.stt.takeLast(1),
                             style = MaterialTheme.typography.bodyMedium,
                             color = Color.Red
@@ -161,8 +149,6 @@ fun SingleDevice(
 
                 IconButton(
                     enabled = releModeGoVisVal,
-//                    enabled = isButtonEnabled ,
-//                    enabled = bVis.value,
                     onClick = {
                         mainViewModel.createEvent(
                             ScreenEvent.ShowDialog(
@@ -307,47 +293,6 @@ fun SingleDevice(
                                             })
                                     )
 
-//                                        Text(
-//                                            text = "график",
-//                                            style = MaterialTheme.typography.bodyMedium,
-//                                            fontSize = MaterialTheme.typography.bodyMedium.fontSize * 1.5f,
-//                                            modifier = Modifier
-////                                            .size(40.dp)
-//                                                .offset(y = (-8).dp)
-//                                                .offset(x = (43).dp)
-//                                                .clickable(onClick = {
-//                                                    when (item.description) {
-//                                                        "Напряжение, В" -> {
-//                                                            navController.navigate(Screen.DisplayChartU.route) {
-//                                                                popUpTo(navController.graph.findStartDestination().id) {
-//                                                                    saveState = true
-//                                                                }
-//                                                                launchSingleTop = true
-//                                                                restoreState = true
-//                                                            }
-//
-//
-//                                                        }
-//
-//                                                        "Ток, А" -> {navController.navigate(Screen.DisplayChartI.route) {
-//                                                            popUpTo(navController.graph.findStartDestination().id) {
-//                                                                saveState = true
-//                                                            }
-//                                                            launchSingleTop = true
-//                                                            restoreState = true
-//                                                        }}
-//                                                        "Мощность, Вт" -> {navController.navigate(Screen.DisplayChartP.route) {
-//                                                            popUpTo(navController.graph.findStartDestination().id) {
-//                                                                saveState = true
-//                                                            }
-//                                                            launchSingleTop = true
-//                                                            restoreState = true
-//                                                        }}
-//                                                        "Температура, °C" -> {}
-//                                                    }
-//
-//                                                })
-//                                        )
                                 }
 
                                 IconButton(
@@ -490,12 +435,6 @@ fun SingleDevice(
                                                     else -> Color.Red
                                                 }
 
-//                                                    CustomLinearProgressIndicator(
-//                                                        progress = 0.5f, // 50% прогресса
-//                                                        modifier = Modifier.weight(1f),
-//                                                        progressColor = colorValue,
-//                                                        backgroundColor = colorValue
-//                                                    )
                                         }
 
                                         uiState.url.take(3) -> {
@@ -520,19 +459,11 @@ fun SingleDevice(
                                                     else -> Color.Red
                                                 }
 
-//                                                    CustomLinearProgressIndicator(
-//                                                        progress = 0.5f, // 50% прогресса
-//                                                        modifier = Modifier.weight(1f),
-//                                                        progressColor = colorValue,
-//                                                        backgroundColor = colorValue
-//                                                    )
+
                                         }
 
                                         uiState.pwr.take(3) -> {
-//                                                    proValueMin = preferences.getInt(
-//                                                        P_TEXT_FIELD_VALUE2,
-//                                                        100
-//                                                    ).toFloat()
+
                                             proValueMax = preferences.getInt(
                                                 P_TEXT_FIELD_VALUE1,
                                                 20000
@@ -550,19 +481,10 @@ fun SingleDevice(
                                                     else -> Color.Red
                                                 }
 
-//                                                    CustomLinearProgressIndicator(
-//                                                        progress = 0.5f, // 50% прогресса
-//                                                        modifier = Modifier.weight(1f),
-//                                                        progressColor = colorValue,
-//                                                        backgroundColor = colorValue
-//                                                    )
                                         }
 
                                         uiState.tmp.take(3) -> {
-//                                                    proValueMin = preferences.getInt(
-//                                                        T_TEXT_FIELD_VALUE2,
-//                                                        1
-//                                                    ).toFloat()
+
                                             proValueMax = preferences.getInt(
                                                 T_TEXT_FIELD_VALUE1,
                                                 100
@@ -580,12 +502,7 @@ fun SingleDevice(
                                                     else -> Color.Red
                                                 }
 
-//                                                    CustomLinearProgressIndicator(
-//                                                        progress = 0.5f, // 50% прогресса
-//                                                        modifier = Modifier.weight(1f),
-//                                                        progressColor = colorValue,
-//                                                        backgroundColor = colorValue
-//                                                    )
+
                                         }
 
                                         "Cou" -> {
@@ -594,10 +511,7 @@ fun SingleDevice(
                                                 1000
                                             ).toFloat()
 
-//                                                    CustomLinearProgressIndicator(
-//                                                        progress = 111.toFloat() / proValueMin.toFloat(), // 50% прогресса
-//                                                        modifier = Modifier.weight(1f),
-//                                                    )
+
                                         }
 
                                         "Tar" -> {
@@ -610,31 +524,24 @@ fun SingleDevice(
                                                 1000
                                             ).toFloat()
 
-//                                                    CustomLinearProgressIndicator(
-//                                                        progress = proValueMax.toFloat() / proValueMin.toFloat(), // 50% прогресса
-//                                                        modifier = Modifier.weight(1f),
-//                                                    )
+
                                         }
                                     }
                                 }
 
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
-//                                        horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.Bottom
                                 ) {
 
                                     Text(
                                         text = "$proValueMin/$proValueMax",
-//                                                    modifier = Modifier.padding(start = 8.dp),
                                         fontSize = MaterialTheme.typography.bodyMedium.fontSize * 1.2f
                                     )
 
-//                                        Spacer(modifier = Modifier.width(16.dp))
                                     Spacer(modifier = Modifier.weight(1f))
 
                                     if (item.description != "Счетчик, кВт*ч" && item.description != "Тарификатор, ₽") {
-//                                        if (item.text.take(3) != )
                                         Text(
                                             text = "норма  ",
                                             fontSize = MaterialTheme.typography.bodyMedium.fontSize * 1.5f
@@ -665,5 +572,20 @@ fun SingleDevice(
             }
         }
 
+    }
+}
+fun SharedPreferences.getIntFlow(key: String, defValue: Int): Flow<Int> {
+    return callbackFlow {
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, changedKey ->
+            if (changedKey == key) {
+                trySend(getInt(key, defValue))
+            }
+        }
+        registerOnSharedPreferenceChangeListener(listener)
+        send(getInt(key, defValue))
+
+        awaitClose {
+            unregisterOnSharedPreferenceChangeListener(listener)
+        }
     }
 }
