@@ -30,8 +30,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -43,7 +41,6 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import com.example.detectcontroller.R
 import com.example.detectcontroller.ui.presentation.MainViewModel
-import com.example.detectcontroller.ui.presentation.MainViewModel.Companion.B_VIS
 import com.example.detectcontroller.ui.presentation.MainViewModel.Companion.I_TEXT_FIELD_VALUE1
 import com.example.detectcontroller.ui.presentation.MainViewModel.Companion.I_TEXT_FIELD_VALUE2
 import com.example.detectcontroller.ui.presentation.MainViewModel.Companion.P_TEXT_FIELD_VALUE1
@@ -55,9 +52,6 @@ import com.example.detectcontroller.ui.presentation.MainViewModel.Companion.U_TE
 import com.example.detectcontroller.ui.presentation.ScreenEvent
 import com.example.detectcontroller.ui.presentation.utils.Item
 import com.example.detectcontroller.ui.presentation.utils.Screen
-import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
 
 
 @Composable
@@ -69,7 +63,7 @@ fun SingleDevice(
 
     val uiState by mainViewModel.uiStateDTO.collectAsState()
     val releModeGoVisVal by mainViewModel.buttonGoVisib.collectAsState()
-    val savedId by preferences.getIntFlow("SAVEDID", 0).collectAsState(initial = 0)
+    val savedId by mainViewModel.savedErrorId.collectAsState()
 
     LaunchedEffect(savedId) {
         mainViewModel.startEventsChecking(savedId)
@@ -251,7 +245,7 @@ fun SingleDevice(
                                         tint = Color.Blue,
                                         modifier = Modifier
 //                                            .size(40.dp)
-                                            .offset(y = (-8).dp)
+                                            .offset(y = (-12).dp)
                                             .offset(x = (43).dp)
                                             .clickable(onClick = {
                                                 when (item.description) {
@@ -301,7 +295,7 @@ fun SingleDevice(
                                     modifier = Modifier
                                         .size(40.dp)
                                         .offset(
-                                            x = 26.dp,
+                                            x = (-26).dp,
                                             y = (-12).dp
                                         )
                                 ) {
@@ -408,7 +402,7 @@ fun SingleDevice(
                             ) {
                                 var proValueMin: Float = 0.1F
                                 var proValueMax: Float = 5000.1F
-                                var colorValue: Color
+                                val colorValue: Color
                                 var proOnOff = false
 
                                 if (item.text != "LoadLoad..") {
@@ -420,7 +414,7 @@ fun SingleDevice(
                                             )
                                             proValueMax = preferences.getFloat(
                                                 I_TEXT_FIELD_VALUE1,
-                                                50.0f
+                                                5.0f
                                             )
 
                                             proOnOff =
@@ -440,7 +434,7 @@ fun SingleDevice(
                                         uiState.url.take(3) -> {
                                             proValueMin = preferences.getInt(
                                                 U_TEXT_FIELD_VALUE2,
-                                                90
+                                                200
                                             ).toFloat()
                                             proValueMax = preferences.getInt(
                                                 U_TEXT_FIELD_VALUE1,
@@ -466,7 +460,7 @@ fun SingleDevice(
 
                                             proValueMax = preferences.getInt(
                                                 P_TEXT_FIELD_VALUE1,
-                                                20000
+                                                20
                                             ).toFloat()
 
                                             proOnOff =
@@ -474,7 +468,7 @@ fun SingleDevice(
 
                                             val currentValue =
                                                 item.text.drop(5).toFloatOrNull()
-                                                    ?: 1000.0f
+                                                    ?: 10.0f
                                             colorValue =
                                                 when (currentValue) {
                                                     in 0f..proValueMax -> Color.Green
@@ -572,20 +566,5 @@ fun SingleDevice(
             }
         }
 
-    }
-}
-fun SharedPreferences.getIntFlow(key: String, defValue: Int): Flow<Int> {
-    return callbackFlow {
-        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, changedKey ->
-            if (changedKey == key) {
-                trySend(getInt(key, defValue))
-            }
-        }
-        registerOnSharedPreferenceChangeListener(listener)
-        send(getInt(key, defValue))
-
-        awaitClose {
-            unregisterOnSharedPreferenceChangeListener(listener)
-        }
     }
 }

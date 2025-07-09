@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.detectcontroller.data.remote.remDTO.StatusEventServerDTO
 import com.example.detectcontroller.domain.models.ErrorServerMod
 import com.example.detectcontroller.ui.presentation.MainViewModel
@@ -50,82 +51,104 @@ sealed class TimelineItem {
 @Composable
 fun Log(mainViewModel: MainViewModel, preferences: SharedPreferences) {
     mainViewModel.createEvent(ScreenEvent.ShowScreen(DialogState.SCREEN_LOG))
-    Box(
-        modifier = Modifier.fillMaxSize().padding(12.dp),
-        contentAlignment = Alignment.Center
+
+    Column(
+        modifier = Modifier.fillMaxSize()
     ) {
-        Text("Журнал событий", style = MaterialTheme.typography.headlineMedium)
-        val eventsListState by mainViewModel.eventServerList.collectAsState()
-        val errorsListState by mainViewModel.errorsListState.collectAsState()
+        // Заголовок, который будет всегда сверху
+        Text(
+            text = "Журнал событий",
+            style = MaterialTheme.typography.headlineMedium.copy(fontSize = 20.sp),
+            modifier = Modifier
+                .padding(12.dp)
+                .align(Alignment.CenterHorizontally)
+        )
 
-        val timelineItems = remember(eventsListState, errorsListState) {
-            (eventsListState.map { TimelineItem.EventItem(it) } +
-                    errorsListState.map { TimelineItem.ErrorItem(it) })
-                .sortedBy { it.time }
-                .reversed()
-        }
+        // Остальное содержимое
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 12.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            val eventsListState by mainViewModel.eventServerList.collectAsState()
+            val errorsListState by mainViewModel.errorsListState.collectAsState()
 
-       fun formatUnixTime(
-            unixTime: Long,
-            pattern: String = "dd.MM.yyyy HH:mm:ss",
-            zoneId: ZoneId = ZoneId.systemDefault()
-        ): String {
-            val instant = Instant.ofEpochSecond(unixTime)
-            val formatter = DateTimeFormatter.ofPattern(pattern).withZone(zoneId)
-            return formatter.format(instant)
-        }
-
-        if (!timelineItems.isNullOrEmpty()) {
-
-            if (!eventsListState.isNullOrEmpty()) {
-
-                preferences
-                    .edit()
-                    .putInt("SAVEDID", eventsListState.last().id)
-                    .apply()
+            val timelineItems = remember(eventsListState, errorsListState) {
+                (eventsListState.map { TimelineItem.EventItem(it) } +
+                        errorsListState.map { TimelineItem.ErrorItem(it) })
+                    .sortedBy { it.time }
+                    .reversed()
             }
 
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(1),
-                contentPadding = PaddingValues(4.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                items(timelineItems) { item ->
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .fillMaxHeight()
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(Color.LightGray)
-                    ) {
-                        Column(
+            fun formatUnixTime(
+                unixTime: Long,
+                pattern: String = "dd.MM.yyyy HH:mm:ss",
+                zoneId: ZoneId = ZoneId.systemDefault()
+            ): String {
+                val instant = Instant.ofEpochSecond(unixTime)
+                val formatter = DateTimeFormatter.ofPattern(pattern).withZone(zoneId)
+                return formatter.format(instant)
+            }
+
+            if (!timelineItems.isNullOrEmpty()) {
+                if (!eventsListState.isNullOrEmpty()) {
+                    preferences
+                        .edit()
+                        .putInt("SAVEDID", eventsListState.last().id)
+                        .apply()
+                    mainViewModel.setEvId(eventsListState.last().id)
+                }
+
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(1),
+                    contentPadding = PaddingValues(4.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    items(timelineItems) { item ->
+                        Box(
+                            contentAlignment = Alignment.Center,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(8.dp)
+                                .fillMaxHeight()
+                                .clip(RoundedCornerShape(8.dp))
                                 .background(Color.LightGray)
-
                         ) {
-                            when (item) {
-                                is TimelineItem.EventItem ->{
-                                    Column {
-                                        Text(text = "Event ${item.event.id}", color = Color.Red)
-                                        Text(text = "Time: ${formatUnixTime(item.event.timeev.toLong())}", color = Color.Black)
-                                        Text(text = "Value: ${item.event.value}", color = Color.Black)
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(8.dp)
+                            )
+                            {
+                                when (item) {
+                                    is TimelineItem.EventItem -> {
+                                        Column {
+//                                            Text(text = "Event ${item.event.id}", color = Color.Red)
+                                            Text(
+                                                text = "${formatUnixTime(item.event.timeev.toLong())}",
+                                                color = Color.Black
+                                            )
+                                            Text(
+                                                text = "${item.event.value}",
+                                                color = Color.Black
+                                            )
+                                        }
                                     }
-                                }
 
-                                is TimelineItem.ErrorItem -> {
-                                    Column {
-                                        Text(text = "Error ${item.error.id}", color = Color.Red)
-                                        Text(text = "Time: ${formatUnixTime(item.error.timeev.toLong())}", color = Color.Black)
-                                        Text(text = "Ошибка сервера", color = Color.Black)
-//
+                                    is TimelineItem.ErrorItem -> {
+                                        Column {
+//                                            Text(text = "Error ${item.error.id}", color = Color.Red)
+                                            Text(
+                                                text = "${formatUnixTime(item.error.timeev.toLong())}",
+                                                color = Color.Black
+                                            )
+                                            Text(text = "Ошибка сервера", color = Color.Black)
+                                        }
                                     }
                                 }
                             }
-
                         }
                     }
                 }

@@ -19,15 +19,18 @@ import com.example.detectcontroller.data.remote.remDTO.DeleteEventDTO
 import com.example.detectcontroller.data.remote.remDTO.RequestDataDTO
 import com.example.detectcontroller.domain.DBRepository
 import com.example.detectcontroller.domain.db.InsertLastEventServerInDBUseCase
+import com.example.detectcontroller.domain.models.ErrorServerMod
 import com.example.detectcontroller.domain.server.CheckServerEventUseCase
 import com.example.detectcontroller.domain.server.DeleteEventServerUseCase
 import com.example.detectcontroller.domain.server.FetchDataUseCase
 import com.example.detectcontroller.ui.presentation.MainActivity
+import com.example.detectcontroller.ui.presentation.MainViewModel
 import com.example.detectcontroller.ui.presentation.MainViewModel.Companion.I_TEXT_FIELD_VALUE1
 import com.example.detectcontroller.ui.presentation.MainViewModel.Companion.I_TEXT_FIELD_VALUE2
 import com.example.detectcontroller.ui.presentation.MainViewModel.Companion.P_TEXT_FIELD_VALUE1
 import com.example.detectcontroller.ui.presentation.MainViewModel.Companion.U_TEXT_FIELD_VALUE1
 import com.example.detectcontroller.ui.presentation.MainViewModel.Companion.U_TEXT_FIELD_VALUE2
+import com.example.detectcontroller.ui.presentation.ScreenEvent
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -226,8 +229,6 @@ class ForegroundService : Service() {
                                 }
                             }
 
-//                        preferences.getFloat(I_TEXT_FIELD_VALUE1
-
 
                             dBRepository.saveEventServerInDB(res)
                             dBRepository.insertLastEventServerDB(
@@ -239,15 +240,7 @@ class ForegroundService : Service() {
                                     name = res.name
                                 )
                             )
-//                        insertLastEventServerInDBUseCase.execute(
-//                            LastEventsServerEntity(
-//                                id = res.id,
-//                                timeev = res.timeev,
-//                                rstate = res.rstate,
-//                                value = res.value,
-//                                name = res.name
-//                            )
-//                        )
+
                             delay(10)
 
                             preferences
@@ -260,7 +253,7 @@ class ForegroundService : Service() {
                                 .apply()
 
                             if (res.name != "gomode") {
-                                showNotification("Внимание, новое событие", res.toString())
+                                showNotification("Новое событие", res.toString())
 
                                 deleteEventServerUseCase.execute(
                                     deleteEventDTO = DeleteEventDTO(
@@ -308,10 +301,12 @@ class ForegroundService : Service() {
 
         scope.launch {
             ////////////////////////////////////////////
+            var counterServ = 0
+            var counterErr = 0
 
             var regData: RegServerEntity?
             regData = null
-            var delay = 4000L
+            val delay = 4000L
             ////////////////////////////////////////////
             while (isActive) {
                 delay(10)
@@ -356,14 +351,41 @@ class ForegroundService : Service() {
                     val dataFromServer = loadReq?.let { fetchDataUseCase.execute(it) }
                     dataFromServer?.onSuccess { res ->
                         dBRepository.saveDataServerInDB(res)
-//                        saveDataInDBUseCase.execute(res)
+                        counterErr = 0
 
                     }?.onFailure { error ->
                         error.printStackTrace()
+
+                        if (counterErr == 0) {
+                            counterServ++
+                            if (counterServ == 4) {
+                                counterErr = 1
+
+                                val currentTimeInSeconds =
+                                    System.currentTimeMillis() / 1000
+
+                                dBRepository.insertError(
+                                    ErrorServerMod(
+                                        errorCode = error.hashCode(),
+                                        errorMessage = "${error.message}",
+                                        timeev = "$currentTimeInSeconds",
+                                        deviceId = preferences.getString(
+                                            MainViewModel.REG_DVID,
+                                            "1"
+                                        )
+                                    )
+                                )
+                                showNotification(
+                                    title = "Ошибка сервера",
+                                    message = "Отключение от сервера"
+                                )
+                                counterServ = 0
+                                delay(100)
+                            }
+                        }
                     }
                     delay(delay)
 //                    delay *= 2
-//                    preferences.edit().putBoolean(B_VIS,true).apply()
                 } catch (e: Exception) {
                     Log.e(TAG, "download error", e)
                 }

@@ -56,10 +56,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import java.time.Instant
-import java.time.ZoneId
-import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 import kotlin.coroutines.cancellation.CancellationException
 
@@ -218,6 +214,13 @@ class MainViewModel @Inject constructor(
         )
     )
 
+
+    private val _savedEventId = MutableStateFlow(Int.MAX_VALUE)
+    val savedErrorId: StateFlow<Int> = _savedEventId
+    fun setEvId(id: Int){
+        _savedEventId.value = id
+    }
+
     private val _isVisibleAlertU = MutableStateFlow(false)
     val isVisibleAlertU: StateFlow<Boolean> = _isVisibleAlertU
 
@@ -244,19 +247,27 @@ class MainViewModel @Inject constructor(
 
     private fun checkEvents(savedId: Int) {
         _eventServerList.value
-            .asReversed()
+//            .asReversed()
             .take(20)
             .forEach { event ->
                 when (event.name) {
                     "evu" -> if (event.id > savedId) {
                         _isVisibleAlertU.value = true
-                    } else _isVisibleAlertU.value = false
+                    } else{
+                        _isVisibleAlertU.value = false
+                    }
 
-                    "evi" -> if (event.id > savedId) _isVisibleAlertI.value =
-                        true else _isVisibleAlertI.value = false
+                    "evi" -> if (event.id > savedId) {
+                        _isVisibleAlertI.value =true
+                    } else{
+                        _isVisibleAlertI.value = false
+                    }
 
-                    "evp" -> if (event.id > savedId) _isVisibleAlertP.value =
-                        true else _isVisibleAlertP.value = false
+                    "evp" -> if (event.id > savedId){
+                        _isVisibleAlertP.value =true
+                    } else {
+                        _isVisibleAlertP.value = false
+                    }
 
                     "gomode" -> createEvent(ScreenEvent.DeleteEventAlarmFromServer(""))
                 }
@@ -627,6 +638,8 @@ class MainViewModel @Inject constructor(
 
 
     init {
+
+        _savedEventId.value = preferences.getInt("SAVEDID", Int.MAX_VALUE) ?: 0
 
         createEvent(ScreenEvent.OpenScreenRel(""))
         createEvent(ScreenEvent.GetErrors(""))
@@ -1341,15 +1354,12 @@ class MainViewModel @Inject constructor(
 
                                             dBRepository.insertError(
                                                 ErrorServerMod(
-//                                                id = 1,
                                                     errorCode = error.hashCode(),
                                                     errorMessage = "${error.message}",
                                                     timeev = "$currentTimeInSeconds",
-//                                                timestamp = "$formattedTime",
                                                     deviceId = preferences.getString(REG_DVID, "1")
                                                 )
                                             )
-
                                             delay(100)
                                             createEvent(ScreenEvent.GetErrors(""))
 
